@@ -1,0 +1,2706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="糯米助手">
+<meta name="theme-color" content="#FF8C69">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="manifest" href="manifest.json">
+<title>糯米饲养助手</title>
+<style>
+/* ========== CSS Variables & Reset ========== */
+:root {
+  --color-primary: #FF8C69;
+  --color-primary-hover: #FF7A52;
+  --color-secondary: #FFD1A9;
+  --color-accent: #FFD1DC;
+  --color-bg: #FFF5F0;
+  --color-card: #FFFFFF;
+  --color-card-border: #FFE4D6;
+  --color-text: #5D4037;
+  --color-text-secondary: #8D6E63;
+  --color-text-muted: #BCAAA4;
+  --color-success: #81C784;
+  --color-warning: #FFD54F;
+  --color-danger: #E57373;
+  --radius-card: 14px;
+  --radius-btn: 8px;
+  --radius-input: 8px;
+  --shadow-card: 0 2px 12px rgba(255,140,105,0.10);
+  --shadow-card-hover: 0 4px 20px rgba(255,140,105,0.18);
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-size-base: 15px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: var(--font-size-base); }
+body {
+  font-family: var(--font-family);
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: calc(72px + var(--safe-bottom));
+  min-height: 100vh;
+}
+
+input, select, textarea, button {
+  font-family: inherit;
+  font-size: 16px; /* prevent iOS zoom */
+  color: var(--color-text);
+}
+button { cursor: pointer; border: none; background: none; }
+input, select, textarea {
+  border: 1.5px solid var(--color-card-border);
+  border-radius: var(--radius-input);
+  padding: 10px 12px;
+  background: var(--color-card);
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+}
+select {
+  padding-right: 28px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238D6E63' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--color-primary); }
+input::placeholder, textarea::placeholder { color: var(--color-text-muted); font-size: 13px; }
+textarea { resize: vertical; min-height: 60px; }
+.meal-item-row input, .exam-item-row input { min-width: 60px; }
+input[type="checkbox"] { width: auto; margin: 0 4px 0 0; flex-shrink: 0; vertical-align: middle; }
+label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+
+/* ========== App Header ========== */
+#app-header {
+  background: var(--color-card);
+  padding: 12px var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-card-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(255,140,105,0.06);
+}
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  overflow: hidden;
+}
+.header-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.header-title { font-size: 17px; font-weight: 700; }
+.header-date { font-size: 12px; color: var(--color-text-secondary); }
+.header-actions { display: flex; gap: 4px; }
+.btn-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  transition: background 0.2s;
+}
+.btn-icon:hover { background: #FFF0EB; }
+.btn-icon:active { background: #FFE4D6; }
+
+/* ========== View Container ========== */
+.view-container { padding: var(--spacing-md); max-width: 700px; margin: 0 auto; }
+.view { display: none; }
+.view.active { display: block; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ========== Nav Bar ========== */
+#app-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  background: var(--color-card);
+  border-top: 1px solid var(--color-card-border);
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 4px calc(6px + var(--safe-bottom));
+  z-index: 100;
+  box-shadow: 0 -1px 4px rgba(255,140,105,0.06);
+}
+.nav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  min-width: 52px;
+  border-radius: 10px;
+  transition: all 0.2s;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+.nav-tab .nav-icon { font-size: 22px; line-height: 1; }
+.nav-tab.active { color: var(--color-primary); }
+.nav-tab:active { background: #FFF0EB; }
+.nav-badge {
+  position: absolute;
+  top: 1px;
+  right: 8px;
+  width: 8px; height: 8px;
+  background: var(--color-danger);
+  border-radius: 50%;
+  display: none;
+}
+.nav-tab { position: relative; }
+
+/* ========== Cards ========== */
+.card {
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-card-border);
+}
+.card h3 { font-size: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.card-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-md); }
+
+/* ========== Cat Profile Card ========== */
+.cat-profile-card { display: flex; align-items: center; gap: 14px; }
+.cat-avatar-large {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.cat-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
+.cat-info { flex: 1; min-width: 0; }
+.cat-info h2 { font-size: 20px; margin-bottom: 2px; }
+.cat-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  background: var(--color-accent);
+  color: var(--color-text);
+}
+
+/* ========== Feeding Status ========== */
+.feeding-slots { display: flex; gap: var(--spacing-sm); }
+.feeding-slot {
+  flex: 1;
+  padding: 10px;
+  border-radius: var(--radius-btn);
+  text-align: center;
+  font-size: 13px;
+  background: #FFF0EB;
+  color: var(--color-text-muted);
+  border: 1.5px dashed var(--color-card-border);
+}
+.feeding-slot.done {
+  background: #E8F5E9;
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+/* ========== Highlight Numbers ========== */
+.highlight { font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.highlight small { font-size: 14px; font-weight: 400; color: var(--color-text-secondary); }
+.highlight-date { font-size: 16px; font-weight: 600; color: var(--color-primary); }
+.sub { font-size: 12px; color: var(--color-text-secondary); }
+
+/* ========== Alert Items ========== */
+.alert-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  display: flex; align-items: center; gap: 6px;
+}
+.alert-item.warning { background: #FFF8E1; color: #F57F17; }
+.alert-item.danger { background: #FFEBEE; color: #C62828; }
+.alert-item.info { background: #E3F2FD; color: #1565C0; }
+.alert-item.success { background: #E8F5E9; color: #2E7D32; }
+
+/* ========== Sub Navigation ========== */
+.sub-nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: var(--spacing-md);
+  background: var(--color-card);
+  border-radius: var(--radius-btn);
+  padding: 4px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-card-border);
+  overflow-x: auto;
+}
+.sub-nav button {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.sub-nav button.active {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ========== Buttons ========== */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 24px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-btn);
+  font-weight: 600;
+  width: 100%;
+  border: none;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 16px;
+  background: var(--color-card);
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-btn);
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.btn-outline:hover { background: #FFF0EB; }
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 12px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.btn-danger { color: var(--color-danger); background: #FFEBEE; }
+.btn-danger:hover { background: #FFCDD2; }
+.btn-success { color: #2E7D32; background: #E8F5E9; }
+.btn-success:hover { background: #C8E6C9; }
+
+.btn-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 14px;
+  border: 2px dashed var(--color-card-border);
+  border-radius: var(--radius-card);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  margin-top: var(--spacing-md);
+  transition: all 0.2s;
+}
+.btn-add:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+/* ========== Forms ========== */
+.form-group { margin-bottom: var(--spacing-sm); }
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.form-row { display: flex; gap: var(--spacing-sm); }
+.form-row > * { flex: 1; }
+
+/* ========== Meal Item Row ========== */
+.meal-item-row, .exam-item-row, .med-item-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.meal-item-row select, .meal-item-row input {
+  width: auto;
+  min-width: 70px;
+  flex: 1;
+}
+.meal-item-row .btn-remove, .exam-item-row .btn-remove, .med-item-row .btn-remove {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  color: var(--color-danger);
+  font-size: 18px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-remove:hover { background: #FFEBEE; }
+
+/* ========== Record List / History ========== */
+.record-list { margin-bottom: var(--spacing-md); }
+.history-day { margin-bottom: var(--spacing-sm); }
+.history-day h4 {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-card-border);
+}
+.history-meal {
+  padding: 8px 12px;
+  font-size: 13px;
+  display: flex; align-items: center; gap: 8px;
+  border-radius: 6px;
+  margin: 2px 0;
+}
+.history-meal:hover { background: #FFF0EB; }
+.history-meal.morning { border-left: 3px solid #FFB74D; }
+.history-meal.evening { border-left: 3px solid #7986CB; }
+.history-meal.other { border-left: 3px solid #4DB6AC; }
+
+/* ========== Inventory ========== */
+.inventory-grid { display: grid; gap: var(--spacing-sm); }
+.inv-card {
+  padding: 14px;
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  border: 1px solid var(--color-card-border);
+}
+.inv-card h4 { font-size: 15px; margin-bottom: 4px; }
+.inv-card .brand { font-size: 12px; color: var(--color-text-muted); }
+.progress-wrap {
+  height: 6px;
+  background: #F5F5F5;
+  border-radius: 3px;
+  margin: 8px 0;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.progress-fill.low { background: var(--color-warning); }
+.progress-fill.critical { background: var(--color-danger); }
+.inv-meta { font-size: 11px; color: var(--color-text-muted); display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ========== Timeline ========== */
+.timeline { position: relative; padding-left: 24px; }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--color-card-border);
+}
+.timeline-item { position: relative; margin-bottom: var(--spacing-md); }
+.timeline-dot {
+  position: absolute;
+  left: -20px;
+  top: 14px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 3px solid var(--color-bg);
+  z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px;
+}
+.timeline-content { margin-left: 4px; }
+.timeline-content time { font-size: 12px; color: var(--color-text-muted); }
+.timeline-content h4 { font-size: 15px; margin: 2px 0 4px; }
+.timeline-content p { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 2px; }
+
+.badge-next {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  background: #E3F2FD;
+  color: #1565C0;
+  margin-top: 6px;
+}
+
+/* ========== Medical Card ========== */
+.medical-card .medical-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.medical-card .medical-header h4 { margin-bottom: 0; }
+.cost-tag { font-size: 13px; font-weight: 600; color: var(--color-text); }
+.insurance-tag { font-size: 12px; color: var(--color-success); }
+.actual-cost { font-size: 13px; font-weight: 700; color: var(--color-primary); }
+.medical-detail { font-size: 13px; }
+.medical-detail p { margin-bottom: 2px; color: var(--color-text-secondary); }
+.card-actions { display: flex; gap: 6px; margin-top: 10px; justify-content: flex-end; }
+
+/* ========== Diary ========== */
+.diary-photos { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.diary-thumb {
+  width: 80px; height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--color-card-border);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.diary-thumb:hover { transform: scale(1.05); }
+.diary-photo-full {
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: var(--radius-card);
+}
+
+/* ========== Reminder ========== */
+.reminder-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.reminder-card > div { flex: 1; }
+.reminder-type-icon { font-size: 28px; flex-shrink: 0; }
+.reminder-card h4 { font-size: 14px; margin-bottom: 2px; }
+.reminder-date { font-size: 12px; }
+.reminder-date.overdue { color: var(--color-danger); font-weight: 600; }
+.reminder-date.today { color: #F57F17; font-weight: 600; }
+.reminder-date.upcoming { color: var(--color-text-secondary); }
+.btn-done {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--color-card-border);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.btn-done:hover { background: #E8F5E9; border-color: var(--color-success); color: var(--color-success); }
+
+/* ========== Modal ========== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+}
+.modal-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
+.modal-container {
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-card-border);
+}
+.modal-header h3 { font-size: 17px; }
+.modal-close {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-muted);
+}
+.modal-close:hover { background: #F5F5F5; }
+.modal-body { padding: var(--spacing-md); }
+.modal-footer {
+  display: flex;
+  gap: 8px;
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--color-card-border);
+  justify-content: flex-end;
+}
+.modal-footer button { padding: 10px 20px; border-radius: var(--radius-btn); font-weight: 600; }
+.modal-footer .btn-cancel { color: var(--color-text-secondary); background: #F5F5F5; }
+.modal-footer .btn-save { background: var(--color-primary); color: #fff; }
+
+/* ========== Toast ========== */
+#toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #5D4037;
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 20px;
+  font-size: 13px;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(-8px); }
+
+/* ========== Empty State ========== */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-text-muted);
+}
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+/* ========== Chart ========== */
+#weight-chart, #weight-sparkline { display: block; width: 100%; }
+#weight-chart { max-width: 600px; margin: 0 auto; }
+#weight-sparkline { width: 100%; height: 50px; }
+
+/* ========== Weight Stats ========== */
+.weight-stats { display: flex; gap: var(--spacing-sm); margin: 10px 0; flex-wrap: wrap; }
+.weight-stats span {
+  padding: 6px 12px;
+  background: #FFF0EB;
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* ========== Data Table ========== */
+.data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; table-layout: fixed; }
+.data-table th, .data-table td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--color-card-border); overflow: hidden; text-overflow: ellipsis; }
+.data-table th { font-size: 11px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; }
+.data-table td:last-child, .data-table th:last-child { text-align: right; width: 70px; white-space: nowrap; }
+.data-table td .change-up { color: var(--color-danger); }
+.data-table td .change-down { color: var(--color-success); }
+.data-table td .change-flat { color: var(--color-text-muted); }
+
+/* ========== Inline Form ========== */
+.inline-form { display: flex; gap: 8px; align-items: center; margin: var(--spacing-md) 0; }
+.inline-form input { flex: 1; }
+.inline-form button { flex-shrink: 0; width: auto; padding: 10px 16px; border-radius: var(--radius-btn); background: var(--color-primary); color: #fff; font-weight: 600; }
+
+/* ========== Settings ========== */
+.settings-section { margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--color-card-border); }
+
+/* ========== Calendar ========== */
+.calendar-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.calendar-nav button { padding: 6px 12px; border-radius: 6px; font-size: 14px; background: #FFF0EB; color: var(--color-text); }
+.calendar-nav .cal-month-label { font-weight: 700; font-size: 15px; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.calendar-grid .cal-day-header { font-size: 11px; color: var(--color-text-muted); padding: 4px 0; font-weight: 600; }
+.calendar-grid .cal-day {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  padding: 2px;
+  font-size: 12px;
+  cursor: pointer;
+  position: relative;
+  background: #FFFBF9;
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.calendar-grid .cal-day:hover { border-color: var(--color-primary); background: #FFF0EB; }
+.calendar-grid .cal-day.today { border-color: var(--color-primary); background: #FFF5F0; }
+.calendar-grid .cal-day.empty { cursor: default; background: transparent; border: none; }
+.calendar-grid .cal-day .cal-date { font-weight: 600; font-size: 12px; }
+.calendar-grid .cal-day .cal-dots { display: flex; gap: 2px; margin-top: 1px; flex-wrap: wrap; justify-content: center; }
+.cal-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.cal-dot.staple { background: #FF8C69; }
+.cal-dot.snack { background: #FFD54F; }
+.cal-dot.supplement { background: #81C784; }
+.cal-dot.medicine { background: #E57373; }
+.cal-day-danger { border-color: #E57373; }
+.cal-day-warning { border-color: #FFD54F; }
+.cal-filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.cal-filter-chip {
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 11px;
+  border: 1.5px solid var(--color-card-border);
+  cursor: pointer;
+  background: var(--color-card);
+  color: var(--color-text-secondary);
+  transition: all 0.15s;
+  user-select: none;
+}
+.cal-filter-chip.active { border-color: var(--color-primary); background: #FFF0EB; color: var(--color-primary); }
+.cal-day-detail { background: #FFFBF9; border-radius: 8px; padding: 10px; margin-top: 8px; display: none; }
+.cal-day-detail.show { display: block; }
+.cal-day-detail h4 { font-size: 13px; margin-bottom: 4px; }
+
+/* ========== Quick Notes ========== */
+.quick-notes { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+.quick-note-chip {
+  padding: 3px 10px;
+  border-radius: 14px;
+  font-size: 11px;
+  background: #F5F5F5;
+  border: 1px solid var(--color-card-border);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: all 0.15s;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.quick-note-chip:hover { background: #FFF0EB; border-color: var(--color-primary); color: var(--color-primary); }
+.quick-note-chip.save-chip { background: #E8F5E9; border-color: var(--color-success); color: #2E7D32; }
+
+/* ========== Inventory Dropdown ========== */
+.food-dropdown-wrap { position: relative; flex: 2; min-width: 150px; }
+.food-dropdown-wrap input { width: 100%; }
+.food-dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0; right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--color-card);
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
+  z-index: 50;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  display: none;
+}
+.food-dropdown-list.show { display: block; }
+.food-dropdown-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex; justify-content: space-between;
+}
+.food-dropdown-item:hover { background: #FFF0EB; }
+.food-dropdown-item .cat-label { font-size: 10px; color: var(--color-text-muted); }
+.food-dropdown-group { font-size: 10px; color: var(--color-text-muted); padding: 4px 12px; font-weight: 600; text-transform: uppercase; }
+.food-dropdown-item.custom { color: var(--color-primary); font-style: italic; }
+
+/* ========== Dashboard Clickable Cards ========== */
+.card-clickable { cursor: pointer; transition: all 0.2s; }
+.card-clickable:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-2px); }
+.card-clickable:active { transform: scale(0.98); }
+
+/* ========== Cat Info Expanded ========== */
+.cat-detail-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--color-card-border); }
+.cat-detail-section h4 { font-size: 13px; margin-bottom: 6px; color: var(--color-text-secondary); }
+.cat-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; font-size: 12px; }
+.cat-detail-grid span { color: var(--color-text-secondary); }
+.cat-detail-grid .val { color: var(--color-text); font-weight: 500; }
+.cat-expand-btn { font-size: 11px; color: var(--color-primary); cursor: pointer; margin-top: 4px; display: inline-block; }
+
+/* ========== Excretion Card ========== */
+.excretion-card { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; margin: 2px 0; font-size: 13px; }
+.excretion-card:hover { background: #FFF0EB; }
+.excretion-card .ex-icon { font-size: 20px; flex-shrink: 0; }
+.excretion-card .ex-type { font-weight: 600; }
+.excretion-card .ex-meta { font-size: 11px; color: var(--color-text-muted); }
+
+/* ========== Responsive ========== */
+@media (min-width: 768px) {
+  body { padding-bottom: 20px; }
+  .view-container { padding: var(--spacing-lg) var(--spacing-lg); }
+  #app-nav {
+    position: sticky;
+    top: 57px;
+    bottom: auto;
+    flex-direction: row;
+    padding: 8px 0;
+    border-top: none;
+    border-bottom: 1px solid var(--color-card-border);
+    box-shadow: none;
+  }
+  .nav-tab { flex-direction: row; gap: 6px; font-size: 13px; }
+  .nav-tab .nav-icon { font-size: 18px; }
+  #toast { bottom: 40px; }
+}
+
+@media (max-width: 400px) {
+  .card-grid-2col { grid-template-columns: 1fr; }
+  .nav-tab { font-size: 9px; padding: 2px 4px; min-width: 40px; }
+  .nav-tab .nav-icon { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== Header ========== -->
+<header id="app-header">
+  <div class="header-left">
+    <div class="header-avatar" id="header-avatar">🐱</div>
+    <div>
+      <div class="header-title">糯米饲养助手</div>
+      <div class="header-date" id="header-date"></div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-icon" id="btn-export" title="导出数据">📥</button>
+    <button class="btn-icon" id="btn-import" title="导入数据">📤</button>
+    <button class="btn-icon" id="btn-settings" title="编辑猫咪信息">⚙️</button>
+  </div>
+</header>
+
+<!-- ========== Nav ========== -->
+<nav id="app-nav">
+  <button class="nav-tab active" data-tab="dashboard">
+    <span class="nav-icon">🏠</span>看板
+    <span class="nav-badge" id="badge-dashboard"></span>
+  </button>
+  <button class="nav-tab" data-tab="feeding">
+    <span class="nav-icon">🍽️</span>喂养
+  </button>
+  <button class="nav-tab" data-tab="health">
+    <span class="nav-icon">🏥</span>健康
+  </button>
+  <button class="nav-tab" data-tab="diary">
+    <span class="nav-icon">📖</span>成长
+  </button>
+  <button class="nav-tab" data-tab="finance">
+    <span class="nav-icon">💰</span>财务
+  </button>
+  <button class="nav-tab" data-tab="reminders">
+    <span class="nav-icon">⏰</span>提醒
+    <span class="nav-badge" id="badge-reminders"></span>
+  </button>
+</nav>
+
+<!-- ========== View Container ========== -->
+<div class="view-container">
+
+  <!-- Dashboard -->
+  <section id="view-dashboard" class="view active"></section>
+
+  <!-- Feeding -->
+  <section id="view-feeding" class="view">
+    <div class="sub-nav" id="feeding-sub-nav">
+      <button class="active" data-sub="record">📝 记录喂食</button>
+      <button data-sub="excretion">💩 排泄记录</button>
+      <button data-sub="inventory">📦 库存管理</button>
+    </div>
+    <div id="feeding-sub-record" class="sub-view"></div>
+    <div id="feeding-sub-inventory" class="sub-view" style="display:none"></div>
+    <div id="feeding-sub-history" class="sub-view" style="display:none"></div>
+    <div id="feeding-sub-excretion" class="sub-view" style="display:none"></div>
+  </section>
+
+  <!-- Health -->
+  <section id="view-health" class="view">
+    <div class="sub-nav" id="health-sub-nav">
+      <button class="active" data-sub="overview">📋 总览</button>
+      <button data-sub="vaccine">💉 疫苗</button>
+      <button data-sub="deworming">🪱 驱虫</button>
+      <button data-sub="checkup">🩺 体检/就医</button>
+      <button data-sub="weight">⚖️ 体重</button>
+    </div>
+    <div id="health-sub-overview" class="sub-view"></div>
+    <div id="health-sub-vaccine" class="sub-view" style="display:none"></div>
+    <div id="health-sub-deworming" class="sub-view" style="display:none"></div>
+    <div id="health-sub-checkup" class="sub-view" style="display:none"></div>
+    <div id="health-sub-weight" class="sub-view" style="display:none"></div>
+  </section>
+
+  <!-- Diary -->
+  <section id="view-diary" class="view">
+    <div class="timeline" id="diary-timeline"></div>
+    <button class="btn-add" id="btn-add-diary">➕ 写日记</button>
+  </section>
+
+  <!-- Finance -->
+  <section id="view-finance" class="view">
+    <div id="finance-content"></div>
+  </section>
+
+  <!-- Reminders -->
+  <section id="view-reminders" class="view">
+    <div class="sub-nav" id="reminders-sub-nav">
+      <button data-filter="overdue">🔴 已过期</button>
+      <button data-filter="today" class="active">🟡 今日</button>
+      <button data-filter="upcoming">🟢 即将到来</button>
+      <button data-filter="all">📋 全部</button>
+    </div>
+    <div id="reminders-list"></div>
+    <button class="btn-add" id="btn-add-reminder">➕ 添加提醒</button>
+  </section>
+
+</div>
+
+<!-- ========== Modal ========== -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 id="modal-title"></h3>
+      <button class="modal-close" id="modal-close">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- ========== Hidden file inputs ========== -->
+<input type="file" accept="image/*" id="hidden-photo-input" style="display:none" multiple>
+<input type="file" accept="application/json" id="hidden-import-input" style="display:none">
+<input type="file" accept="image/*" id="hidden-avatar-input" style="display:none">
+
+<!-- ========== Toast ========== -->
+<div id="toast"></div>
+
+<script>
+/* =================================================================================
+   糯米饲养助手 - JavaScript Application
+   ================================================================================= */
+
+// =========================== CONFIG ===========================
+const CONFIG = {
+  STORAGE_KEY: 'nuomi_app_data',
+  STORAGE_VERSION: 1,
+  MEAL_CATEGORIES: [
+    { value: 'staple', label: '主食' },
+    { value: 'snack', label: '零食' },
+    { value: 'supplement', label: '营养品' }
+  ],
+  MEAL_UNITS: ['g', 'ml', '粒', '包', '罐', '片', '颗', '勺'],
+  REMINDER_TYPES: [
+    { value: 'medicine', label: '💊 喂药', icon: '💊' },
+    { value: 'vaccine', label: '💉 疫苗', icon: '💉' },
+    { value: 'deworming', label: '🪱 驱虫', icon: '🪱' },
+    { value: 'checkup', label: '🩺 体检', icon: '🩺' },
+    { value: 'other', label: '📌 其他', icon: '📌' }
+  ],
+  REPEAT_TYPES: [
+    { value: 'none', label: '不重复' },
+    { value: 'daily', label: '每天' },
+    { value: 'weekly', label: '每周' },
+    { value: 'monthly', label: '每月' },
+    { value: 'yearly', label: '每年' }
+  ],
+  EXCRETION_TYPES: [
+    { value: 'poop', label: '💩 便便', icon: '💩' },
+    { value: 'pee', label: '💧 尿尿', icon: '💧' },
+    { value: 'both', label: '💩💧 都有', icon: '💩' }
+  ],
+  STOOL_CONSISTENCY: [
+    { value: 'normal', label: '正常', color: '#81C784' },
+    { value: 'soft', label: '偏软', color: '#FFD54F' },
+    { value: 'diarrhea', label: '拉稀', color: '#E57373' },
+    { value: 'hard', label: '偏硬', color: '#FFB74D' }
+  ],
+  QUANTITY_LEVELS: [
+    { value: 'normal', label: '正常' },
+    { value: 'less', label: '偏少' },
+    { value: 'more', label: '偏多' }
+  ],
+  FOOD_OPEN_WARN_DAYS: 30,
+  EXPIRY_WARN_DAYS: 30,
+  MAX_PHOTO_WIDTH: 800,
+  PHOTO_QUALITY: 0.7,
+  CHART_COLORS: { line: '#FF8C69', point: '#FF6B6B', grid: '#FFE4D6', trend: '#90B4CE' }
+};
+
+// =========================== UTILS ===========================
+const $ = (s, p) => (p || document).querySelector(s);
+const $$ = (s, p) => (p || document).querySelectorAll(s);
+
+const Utils = {
+  todayStr() { return new Date().toISOString().slice(0, 10); },
+  todayDate() { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); },
+  daysBetween(d1, d2) { return Math.round((d2 - d1) / 86400000); },
+  randomId(prefix) { return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); },
+
+  formatDate(ds) {
+    if (!ds) return '';
+    const d = new Date(ds + 'T00:00:00');
+    return d.toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+  },
+  formatDateShort(ds) { return ds ? ds.slice(5) : ''; },
+  fmtMoney(n) { return '¥' + (Number(n) || 0).toFixed(2); },
+
+  calculateAge(birthStr) {
+    const b = new Date(birthStr + 'T00:00:00');
+    const now = new Date();
+    let y = now.getFullYear() - b.getFullYear();
+    let m = now.getMonth() - b.getMonth();
+    if (m < 0) { y--; m += 12; }
+    const d = now.getDate() - b.getDate();
+    if (d < 0) { m--; if (m < 0) { y--; m += 12; } }
+    if (y > 0) return y + '岁' + m + '个月';
+    if (m > 0) return m + '个月';
+    return Math.max(0, Math.floor((now - b) / 86400000)) + '天';
+  },
+
+  compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > CONFIG.MAX_PHOTO_WIDTH) { h = Math.round(h * CONFIG.MAX_PHOTO_WIDTH / w); w = CONFIG.MAX_PHOTO_WIDTH; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', CONFIG.PHOTO_QUALITY));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  },
+
+  escape(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; },
+
+  el(tag, attrs = {}, ...children) {
+    const el = document.createElement(tag);
+    Object.entries(attrs).forEach(([k, v]) => {
+      if (k === 'className') el.className = v;
+      else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
+      else el.setAttribute(k, v);
+    });
+    children.forEach(c => { if (typeof c === 'string') el.appendChild(document.createTextNode(c)); else if (c) el.appendChild(c); });
+    return el;
+  }
+};
+
+// =========================== DATA MANAGER ===========================
+const DataManager = {
+  _data: null,
+
+  init() {
+    this._data = this._load();
+    if (!this._data) { this._data = this._defaultData(); this._save(); }
+    if (this._data.version < CONFIG.STORAGE_VERSION) this._migrate();
+  },
+
+  _load() {
+    try {
+      const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e) { return null; }
+  },
+
+  _save() {
+    this._data.updatedAt = new Date().toISOString();
+    const str = JSON.stringify(this._data);
+    if (str.length > 4000000) { showToast('⚠️ 存储空间不足，请导出数据后清理旧照片或记录', 'danger'); return false; }
+    // Auto-backup before overwriting
+    var old = localStorage.getItem(CONFIG.STORAGE_KEY);
+    if (old && old.length > 200) { localStorage.setItem(CONFIG.STORAGE_KEY + '_backup', old); }
+    localStorage.setItem(CONFIG.STORAGE_KEY, str);
+    return true;
+  },
+
+  _migrate() { this._data.version = CONFIG.STORAGE_VERSION; this._save(); },
+
+  _defaultData() {
+    return {
+      version: 1,
+      updatedAt: '',
+      catInfo: {
+        name: '糯米', breed: '混血猫（长毛起司猫）', birthDate: '2026-04-06', gender: 'female',
+        color: '起司白橘', fixed: false, adoptionDate: '2026-06-04', chipId: '', photo: '',
+        location: '深圳宝安西乡',
+        dailySupplements: 'Mag乳铁蛋白半颗 + Mag布拉迪益生菌半袋 + 复合维生素B族半片',
+        healthNotes: '1. 冠状病毒FCoV携带（无症状，6.11检出125IU→6.15复查76IU，居家养护中）\n2. 粪便菌群紊乱（补充益生菌调节中）\n3. 左眼泪痕严重，疑似先天性鼻泪管堵塞（生理盐水日常擦拭，氯霉素/红霉素无效）\n4. 需定期监测冠状数值及淋巴细胞指标'
+      },
+      feedingRecords: [],
+      inventory: [
+        { id: 'inv_1', category: 'staple', name: '皇家奶糕猫粮BK43', brand: '皇家', packaging: 'bag', totalAmount: 4000, totalUnit: 'g', remainingAmount: 3500, openDate: '2026-06-05', expiryDate: '2027-06-05', batchNumber: '', note: '共两袋，第一袋已开封', isActive: true },
+        { id: 'inv_2', category: 'staple', name: '皇家奶糕罐', brand: '皇家', packaging: 'can', totalAmount: 7, totalUnit: '罐', remainingAmount: 6, openDate: null, expiryDate: '2027-06-01', batchNumber: '88g/罐', note: '', isActive: true },
+        { id: 'inv_3', category: 'staple', name: 'K9罐头混合口味', brand: 'K9 Natural', packaging: 'can', totalAmount: 6, totalUnit: '罐', remainingAmount: 6, openDate: null, expiryDate: '2027-12-01', batchNumber: '2罐85g+4罐170g', note: '', isActive: true },
+        { id: 'inv_4', category: 'snack', name: '麦德氏羊奶粉', brand: '麦德氏', packaging: 'bag', totalAmount: 41, totalUnit: '袋', remainingAmount: 34, openDate: '2026-06-05', expiryDate: '2027-06-01', batchNumber: '5g/袋', note: '', isActive: true },
+        { id: 'inv_5', category: 'supplement', name: 'Mag布拉迪益生菌', brand: 'Mag', packaging: 'bag', totalAmount: 20, totalUnit: '袋', remainingAmount: 11, openDate: '2026-06-10', expiryDate: '2027-06-01', batchNumber: '两盒', note: '每天半袋，4斤以下每次半袋', isActive: true },
+        { id: 'inv_6', category: 'supplement', name: 'Mag乳铁蛋白', brand: 'Mag', packaging: 'bottle', totalAmount: 30, totalUnit: '颗', remainingAmount: 20.5, openDate: '2026-06-10', expiryDate: '2027-06-01', batchNumber: '', note: '每天半颗，2-4月龄每次半颗', isActive: true },
+        { id: 'inv_7', category: 'supplement', name: '恒健复合维生素B族片', brand: '恒健', packaging: 'bottle', totalAmount: 100, totalUnit: '片', remainingAmount: 94, openDate: '2026-06-10', expiryDate: '2027-06-01', batchNumber: '', note: '5月龄前半片/次，后半片→1片', isActive: true },
+        { id: 'inv_8', category: 'medicine', name: '拜达尔补血肝精', brand: '拜达尔', packaging: 'bottle', totalAmount: 2, totalUnit: '瓶', remainingAmount: 2, openDate: null, expiryDate: '2027-06-01', batchNumber: '50ml/瓶', note: '还没开始喂', isActive: true }
+      ],
+      vaccineRecords: [
+        { id: 'vac_1', vaccineName: '猫三联（妙三多）', doseNumber: 1, totalDoses: 3, date: '2026-06-02', nextDueDate: '2026-06-23', brand: '妙三多', manufacturer: '硕腾', batchNumber: '', hospital: '新瑞鹏医院-深圳宝安西乡分院', doctor: '', cost: 0, note: '第一针，0元活动' },
+        { id: 'vac_2', vaccineName: '猫三联（妙三多）', doseNumber: 2, totalDoses: 3, date: '2026-06-27', nextDueDate: '2026-07-18', brand: '妙三多', manufacturer: '硕腾', batchNumber: '', hospital: '新瑞鹏医院-深圳宝安西乡分院', doctor: '', cost: 32, note: '美团购买32元' }
+      ],
+      healthCheckRecords: [
+        { id: 'hc_1', date: '2026-06-11', type: 'routine', hospital: '新瑞鹏医院-深圳宝安西乡分院', doctor: '', chiefComplaint: '新猫到家体检', weight: 0.8, examinationItems: [
+          { name: '冠状病毒 FCoV Ag', result: '125', unit: 'IU', referenceRange: '≤10.00', isAbnormal: true, cost: 0 },
+          { name: '粪便检查', result: '菌群紊乱', unit: '', referenceRange: '正常', isAbnormal: true, cost: 0 },
+          { name: '淋巴细胞百分比', result: '48.8', unit: '%', referenceRange: '12%-45%', isAbnormal: true, cost: 0 }
+        ], totalCost: 564, note: '连续五天打小针（五天冠状干扰素+三天消炎针），6.11-6.15' },
+        { id: 'hc_2', date: '2026-06-15', type: 'follow-up', hospital: '新瑞鹏医院-深圳宝安西乡分院', doctor: '', chiefComplaint: '冠状复查', weight: null, examinationItems: [
+          { name: '冠状病毒 FCoV Ag', result: '76', unit: 'IU', referenceRange: '≤10.00', isAbnormal: true, cost: 80 }
+        ], totalCost: 80, note: '数值仍不理想，但糯米无任何症状，决定居家养护，补充乳铁蛋白、益生菌等' }
+      ],
+      weightRecords: [
+        { id: 'w_1', date: '2026-06-09', weight: 0.7, source: 'manual' },
+        { id: 'w_2', date: '2026-06-12', weight: 0.8, source: 'health_check' },
+        { id: 'w_3', date: '2026-06-27', weight: 1.0, source: 'manual' }
+      ],
+      medicalRecords: [],
+      growthDiary: [],
+      reminders: [
+        { id: 'rem_1', type: 'vaccine', title: '猫三联第三针（妙三多）', date: '2026-07-18', repeatType: 'none', repeatInterval: 0, completed: false, completedDate: null, note: '提前预约新瑞鹏医院' },
+        { id: 'rem_2', type: 'deworming', title: '体内外驱虫', date: '2026-07-04', repeatType: 'monthly', repeatInterval: 1, completed: false, completedDate: null, note: '到家满一个月，咨询兽医后驱虫' },
+        { id: 'rem_3', type: 'medicine', title: '乳铁蛋白半颗', date: Utils.todayStr(), repeatType: 'daily', repeatInterval: 1, completed: false, completedDate: null, note: '每日补充，提高免疫力' },
+        { id: 'rem_4', type: 'medicine', title: '益生菌半袋', date: Utils.todayStr(), repeatType: 'daily', repeatInterval: 1, completed: false, completedDate: null, note: '每日补充，调节肠道菌群' },
+        { id: 'rem_5', type: 'medicine', title: '维生素B族半片', date: Utils.todayStr(), repeatType: 'daily', repeatInterval: 1, completed: false, completedDate: null, note: '每日补充' }
+      ],
+      excretionRecords: [],
+      commonNotes: ['胃口很好，全部吃光', '剩了一小半', '不怎么想吃，几乎没动', '便便正常，成型好', '今天精神很好', '今天有点蔫，观察中']
+    };
+  },
+
+  // Generic accessors
+  data() { return this._data; },
+  getSection(key) { return this._data[key] || []; },
+
+  addRecord(key, record) {
+    if (!this._data[key]) this._data[key] = [];
+    record.id = Utils.randomId(key.slice(0, 4));
+    record.createdAt = new Date().toISOString();
+    this._data[key].push(record);
+    this._save();
+    return record;
+  },
+
+  updateRecord(key, id, updates) {
+    const arr = this._data[key];
+    const idx = arr.findIndex(r => r.id === id);
+    if (idx === -1) return false;
+    Object.assign(arr[idx], updates, { updatedAt: new Date().toISOString() });
+    this._save();
+    return true;
+  },
+
+  deleteRecord(key, id) {
+    const arr = this._data[key];
+    const idx = arr.findIndex(r => r.id === id);
+    if (idx === -1) return false;
+    arr.splice(idx, 1);
+    this._save();
+    return true;
+  },
+
+  updateCatInfo(updates) {
+    Object.assign(this._data.catInfo, updates);
+    this._save();
+  },
+
+  // Dashboard queries
+  getTodayFeeding() {
+    const today = Utils.todayStr();
+    return this._data.feedingRecords.filter(r => r.date === today);
+  },
+
+  getTodayFeedingStatus() {
+    const records = this.getTodayFeeding();
+    const status = { morning: false, evening: false, other: false };
+    records.forEach(r => { status[r.timeOfDay] = true; });
+    return status;
+  },
+
+  getNextVaccine() {
+    const vaccines = [...this._data.vaccineRecords].sort((a, b) => b.doseNumber - a.doseNumber);
+    return vaccines.find(v => v.nextDueDate && v.nextDueDate >= Utils.todayStr()) || null;
+  },
+
+  getLatestWeight() {
+    if (!this._data.weightRecords.length) return null;
+    return [...this._data.weightRecords].sort((a, b) => b.date.localeCompare(a.date))[0];
+  },
+
+  getWeightRecordsSorted() {
+    return [...this._data.weightRecords].sort((a, b) => a.date.localeCompare(b.date));
+  },
+
+  getInventoryAlerts() {
+    const today = Utils.todayDate();
+    return this._data.inventory
+      .filter(item => item.isActive)
+      .map(item => {
+        const alerts = [];
+        if (item.openDate) {
+          const daysOpen = Utils.daysBetween(new Date(item.openDate + 'T00:00:00'), today);
+          if (daysOpen > CONFIG.FOOD_OPEN_WARN_DAYS) alerts.push({ type:'open', severity:'warning', days: daysOpen, msg: '已开封 ' + daysOpen + ' 天' });
+        }
+        if (item.expiryDate) {
+          const daysToExpiry = Utils.daysBetween(today, new Date(item.expiryDate + 'T00:00:00'));
+          if (daysToExpiry <= CONFIG.EXPIRY_WARN_DAYS && daysToExpiry >= 0) alerts.push({ type:'expiry', severity: daysToExpiry <= 7 ? 'danger' : 'warning', days: daysToExpiry, msg: daysToExpiry + ' 天后过期' });
+          else if (daysToExpiry < 0) alerts.push({ type:'expiry', severity:'danger', days: Math.abs(daysToExpiry), msg: '已过期 ' + Math.abs(daysToExpiry) + ' 天' });
+        }
+        if (item.totalAmount > 0) {
+          const remainingPct = item.remainingAmount / item.totalAmount;
+          if (remainingPct <= 0.3 && remainingPct > 0) alerts.push({ type:'low', severity: remainingPct <= 0.1 ? 'danger' : 'warning', msg: '仅剩 ' + Math.round(remainingPct * 100) + '%，请及时补货' });
+          else if (remainingPct <= 0) alerts.push({ type:'low', severity:'danger', msg: '已用完，需要立即补货' });
+        }
+        return { item, alerts };
+      })
+      .filter(e => e.alerts.length > 0);
+  },
+
+  getRemindersByFilter(filter) {
+    const today = Utils.todayStr();
+    const all = this._data.reminders;
+    const result = { overdue:[], today:[], upcoming:[], completed:[] };
+
+    all.forEach(r => {
+      const effDate = ReminderEngine.getEffectiveDate(r);
+      if (!effDate) { result.completed.push(r); return; }
+      if (effDate < today) result.overdue.push({...r, _effDate: effDate});
+      else if (effDate === today) result.today.push({...r, _effDate: effDate});
+      else result.upcoming.push({...r, _effDate: effDate});
+    });
+
+    result.upcoming.sort((a,b) => a._effDate.localeCompare(b._effDate));
+    result.overdue.sort((a,b) => a._effDate.localeCompare(b._effDate));
+    return result;
+  },
+
+  // Common notes
+  getCommonNotes() { return this._data.commonNotes || []; },
+  addCommonNote(note) {
+    if (!this._data.commonNotes) this._data.commonNotes = [];
+    if (!this._data.commonNotes.includes(note)) {
+      this._data.commonNotes.push(note);
+      this._save();
+    }
+  },
+  removeCommonNote(note) {
+    if (!this._data.commonNotes) return;
+    const idx = this._data.commonNotes.indexOf(note);
+    if (idx !== -1) { this._data.commonNotes.splice(idx, 1); this._save(); }
+  },
+
+  // Excretion queries
+  getTodayExcretion() {
+    return (this._data.excretionRecords || []).filter(r => r.date === Utils.todayStr());
+  },
+  getExcretionRecordsSorted() {
+    return [...(this._data.excretionRecords || [])].sort((a, b) => b.date.localeCompare(a.date) || b.timeOfDay.localeCompare(a.timeOfDay));
+  },
+
+  // Export / Import
+  exportJSON() {
+    const json = JSON.stringify(this._data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nuomi_backup_' + Utils.todayStr() + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✅ 数据已导出');
+  },
+
+  importJSON(jsonStr) {
+    try {
+      const parsed = JSON.parse(jsonStr);
+      if (!parsed.catInfo || !parsed.feedingRecords) throw new Error('数据格式不正确');
+      this._data = parsed;
+      this._save();
+      return true;
+    } catch(e) { return false; }
+  }
+};
+
+// =========================== WEIGHT CHART ===========================
+const WeightChart = {
+  draw(data) {
+    const canvas = $('#weight-chart');
+    if (!canvas || data.length === 0) return;
+    const dpr = window.devicePixelRatio || 1;
+    const dw = canvas.clientWidth || 600;
+    const dh = canvas.clientHeight || 260;
+    canvas.width = dw * dpr;
+    canvas.height = dh * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const pad = { top: 20, right: 24, bottom: 44, left: 80 }; const gridLeft = pad.left - 28;
+    const pw = dw - pad.left - pad.right;
+    const ph = dh - pad.top - pad.bottom;
+
+    ctx.clearRect(0, 0, dw, dh);
+
+    const dates = data.map(d => new Date(d.date + 'T00:00:00'));
+    const weights = data.map(d => d.weight);
+    const minDate = dates[0], maxDate = dates[dates.length - 1];
+    const dateRange = maxDate - minDate || 86400000;
+    let minW = Math.floor(Math.min(...weights) * 10) / 10 - 0.1;
+    let maxW = Math.ceil(Math.max(...weights) * 10) / 10 + 0.1;
+    if (maxW - minW < 0.4) { const mid = (minW + maxW) / 2; minW = mid - 0.3; maxW = mid + 0.3; }
+    if (minW < 0) minW = 0;
+
+    const xScale = d => pad.left + ((d - minDate) / dateRange) * pw;
+    const yScale = w => pad.top + ph - ((w - minW) / (maxW - minW)) * ph;
+
+    // Grid
+    const ySteps = 4;
+    for (let i = 0; i <= ySteps; i++) {
+      const y = pad.top + (ph / ySteps) * i;
+      ctx.strokeStyle = CONFIG.CHART_COLORS.grid;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(gridLeft, y); ctx.lineTo(pad.left + pw, y); ctx.stroke();
+      const val = maxW - ((maxW - minW) / ySteps) * i;
+      ctx.fillStyle = '#BCAAA4';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(val.toFixed(1) + 'kg', gridLeft - 4, y + 3);
+    }
+
+    // X labels
+    const showEvery = Math.max(1, Math.floor(dates.length / 5));
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#BCAAA4';
+    ctx.font = '10px sans-serif';
+    for (let i = 0; i < dates.length; i += showEvery) {
+      const x = xScale(dates[i]);
+      ctx.fillText(Utils.formatDateShort(data[i].date), x, pad.top + ph + 16);
+    }
+    // Always show last point date
+    if (dates.length > 1) {
+      const lastX = xScale(dates[dates.length - 1]);
+      ctx.fillText(Utils.formatDateShort(data[dates.length - 1].date), lastX, pad.top + ph + 16);
+    }
+
+    // Trend line (linear regression)
+    if (data.length >= 2) {
+      const n = data.length;
+      const sumX = dates.reduce((s, d) => s + d.getTime(), 0);
+      const sumY = weights.reduce((s, w) => s + w, 0);
+      const sumXY = dates.reduce((s, d, i) => s + d.getTime() * weights[i], 0);
+      const sumXX = dates.reduce((s, d) => s + d.getTime() * d.getTime(), 0);
+      const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+      const intercept = (sumY - slope * sumX) / n;
+      const tx1 = minDate.getTime(), tx2 = maxDate.getTime();
+      ctx.strokeStyle = CONFIG.CHART_COLORS.trend;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(xScale(new Date(tx1)), yScale(Math.max(0, slope * tx1 + intercept)));
+      ctx.lineTo(xScale(new Date(tx2)), yScale(Math.max(0, slope * tx2 + intercept)));
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Data line
+    ctx.strokeStyle = CONFIG.CHART_COLORS.line;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    data.forEach((d, i) => {
+      const x = xScale(dates[i]), y = yScale(d.weight);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Points
+    data.forEach((d, i) => {
+      const x = xScale(dates[i]), y = yScale(d.weight);
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = CONFIG.CHART_COLORS.point;
+      ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#5D4037';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(d.weight.toFixed(1), x, y - 12);
+    });
+  },
+
+  drawSparkline(data) {
+    const canvas = $('#weight-sparkline');
+    if (!canvas || data.length < 2) return;
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const weights = data.map(d => d.weight);
+    const minW = Math.min(...weights), maxW = Math.max(...weights);
+    const range = maxW - minW || 0.1;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = CONFIG.CHART_COLORS.line;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    data.forEach((d, i) => {
+      const x = (i / Math.max(1, data.length - 1)) * w;
+      const y = h - ((d.weight - minW) / range) * (h - 8) - 4;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  }
+};
+
+// =========================== REMINDER ENGINE ===========================
+const ReminderEngine = {
+  getEffectiveDate(reminder) {
+    if (!reminder.completed) return reminder.date;
+    if (reminder.repeatType === 'none') return null;
+    const base = new Date(reminder.date + 'T00:00:00');
+    const today = Utils.todayDate();
+    let next = new Date(base);
+    while (next <= today) {
+      switch (reminder.repeatType) {
+        case 'daily': next.setDate(next.getDate() + (reminder.repeatInterval || 1)); break;
+        case 'weekly': next.setDate(next.getDate() + 7 * (reminder.repeatInterval || 1)); break;
+        case 'monthly': next.setMonth(next.getMonth() + (reminder.repeatInterval || 1)); break;
+        case 'yearly': next.setFullYear(next.getFullYear() + (reminder.repeatInterval || 1)); break;
+        default: return null;
+      }
+    }
+    return next.toISOString().slice(0, 10);
+  },
+
+  completeReminder(id) {
+    const reminders = DataManager.getSection('reminders');
+    const r = reminders.find(x => x.id === id);
+    if (!r) return;
+    if (r.repeatType === 'none') {
+      DataManager.updateRecord('reminders', id, { completed: true, completedDate: Utils.todayStr() });
+    } else {
+      const nextDate = this.getEffectiveDate(r);
+      DataManager.updateRecord('reminders', id, { date: nextDate, completedDate: Utils.todayStr(), completed: false });
+    }
+  }
+};
+
+// =========================== TOAST ===========================
+let toastTimer;
+function showToast(msg, type) {
+  const toast = $('#toast');
+  toast.textContent = msg;
+  toast.className = 'show';
+  if (type === 'danger') toast.style.background = '#E57373';
+  else if (type === 'success') toast.style.background = '#81C784';
+  else toast.style.background = '#5D4037';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.className = ''; }, 2200);
+}
+
+// =========================== MODAL ===========================
+function openModal(title, bodyHTML, onSave) {
+  $('#modal-title').textContent = title;
+  $('#modal-body').innerHTML = bodyHTML;
+  $('#modal-footer').innerHTML = '';
+  if (onSave) {
+    const cancelBtn = Utils.el('button', { className: 'btn-cancel', onClick() { closeModal(); } }, '取消');
+    const saveBtn = Utils.el('button', { className: 'btn-save', onClick() { onSave(); } }, '💾 保存');
+    $('#modal-footer').append(cancelBtn, saveBtn);
+  }
+  $('#modal-overlay').classList.add('show');
+}
+
+function closeModal() { $('#modal-overlay').classList.remove('show'); }
+
+// =========================== CONFIRM DIALOG ===========================
+function showConfirm(msg) {
+  return new Promise(resolve => {
+    const body = '<p style="text-align:center;padding:20px;font-size:15px">' + Utils.escape(msg) + '</p>';
+    openModal('确认操作', body, () => { closeModal(); resolve(true); });
+    $('#modal-footer').querySelector('.btn-save').textContent = '✅ 确认';
+    const orig = $('#modal-footer').querySelector('.btn-cancel').onclick;
+    $('#modal-footer').querySelector('.btn-cancel').onclick = () => { closeModal(); resolve(false); };
+    // restore on new open
+    const restore = () => { $('#modal-footer').querySelector('.btn-cancel').onclick = orig; };
+    setTimeout(restore, 0);
+  });
+}
+
+// =========================== UI RENDERER ===========================
+const UIRenderer = {
+
+  // ----- Dashboard -----
+  renderDashboard() {
+    const cat = DataManager.data().catInfo;
+    const status = DataManager.getTodayFeedingStatus();
+    const nextVax = DataManager.getNextVaccine();
+    const latestW = DataManager.getLatestWeight();
+    const wtRecords = DataManager.getWeightRecordsSorted();
+    const alerts = DataManager.getInventoryAlerts();
+    const remCats = DataManager.getRemindersByFilter('today');
+    const age = Utils.calculateAge(cat.birthDate);
+
+    let html = '';
+
+    // Cat profile card
+    html += '<div class="card cat-profile-card">';
+    html += '<div class="cat-avatar-large" id="dashboard-avatar">' + (cat.photo ? '<img src="' + cat.photo + '" alt="糯米">' : '🐱') + '</div>';
+    html += '<div class="cat-info">';
+    html += '<h2>' + Utils.escape(cat.name) + '</h2>';
+    html += '<div class="cat-badges">';
+    html += '<span class="badge">' + Utils.escape(cat.breed) + '</span>';
+    html += '<span class="badge">' + age + '</span>';
+    html += '<span class="badge">' + (cat.gender === 'female' ? '♀ 妹妹' : '♂ 弟弟') + '</span>';
+    html += '<span class="badge">' + (cat.fixed ? '已绝育' : '未绝育') + '</span>';
+    html += '</div>';
+    html += '<p style="margin-top:6px;font-size:13px;color:var(--color-text-secondary)">📍 深圳宝安西乡 · 🏠 到家 ' + Utils.calculateAge(cat.adoptionDate) + '</p>';
+    html += '</div></div>';
+
+    // Today's feeding status
+    html += '<div class="card"><h3>🍽️ 今日喂食</h3><div class="feeding-slots">';
+    html += '<div class="feeding-slot' + (status.morning ? ' done' : '') + '">☀️ 早餐' + (status.morning ? ' ✅' : ' ⏳') + '</div>';
+    html += '<div class="feeding-slot' + (status.evening ? ' done' : '') + '">🌙 晚餐' + (status.evening ? ' ✅' : ' ⏳') + '</div>';
+    html += '<div class="feeding-slot' + (status.other ? ' done' : '') + '">🍖 加餐' + (status.other ? ' ✅' : '') + '</div>';
+    html += '</div></div>';
+
+    // Quick glance cards
+    html += '<div class="card-grid-2col">';
+    // Next vaccine
+    html += '<div class="card"><h3>💉 下次疫苗</h3>';
+    if (nextVax) {
+      const daysLeft = Utils.daysBetween(Utils.todayDate(), new Date(nextVax.nextDueDate + 'T00:00:00'));
+      html += '<p class="highlight-date">' + Utils.formatDateShort(nextVax.nextDueDate) + '</p>';
+      html += '<p class="sub">' + Utils.escape(nextVax.vaccineName) + ' · 还有 ' + daysLeft + ' 天</p>';
+    } else {
+      html += '<p class="sub">暂无待接种疫苗</p>';
+    }
+    html += '</div>';
+
+    // Weight
+    html += '<div class="card"><h3>⚖️ 体重</h3>';
+    if (latestW) {
+      html += '<p class="highlight">' + latestW.weight.toFixed(1) + ' <small>kg</small></p>';
+      html += '<canvas id="weight-sparkline" width="150" height="50"></canvas>';
+    } else {
+      html += '<p class="sub">暂无体重记录</p>';
+    }
+    html += '</div></div>';
+
+    // Inventory alerts
+    if (alerts.length > 0) {
+      html += '<div class="card"><h3>📦 库存提醒</h3>';
+      alerts.forEach(({ item, alerts: a }) => {
+        a.forEach(al => {
+          html += '<div class="alert-item ' + al.severity + '">';
+          html += al.severity === 'danger' ? '🔴 ' : al.severity === 'warning' ? '⚠️ ' : 'ℹ️ ';
+          html += Utils.escape(item.name) + ' · ' + al.msg;
+          html += '</div>';
+        });
+      });
+      html += '</div>';
+    }
+
+    // Upcoming reminders
+    const upcomingReminders = [...remCats.today, ...remCats.overdue].slice(0, 4);
+    if (upcomingReminders.length > 0) {
+      html += '<div class="card"><h3>⏰ 提醒</h3>';
+      upcomingReminders.forEach(r => {
+        const isOverdue = r._effDate < Utils.todayStr();
+        html += '<div class="alert-item ' + (isOverdue ? 'danger' : 'warning') + '" style="margin-bottom:4px">';
+        html += (isOverdue ? '🔴 ' : '🟡 ') + Utils.escape(r.title) + ' · ' + r._effDate;
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    $('#view-dashboard').innerHTML = html;
+
+    // Sparkline
+    if (wtRecords.length >= 2) {
+      setTimeout(() => WeightChart.drawSparkline(wtRecords), 100);
+    }
+  },
+
+  // ----- Feeding: Record -----
+  renderFeedingRecord() {
+    let html = '<form id="form-feeding"><div class="form-row">';
+    html += '<div class="form-group"><label>日期</label><input type="date" name="date" value="' + Utils.todayStr() + '" required></div>';
+    html += '<div class="form-group"><label>时段</label><select name="timeOfDay"><option value="morning">☀️ 早餐</option><option value="evening">🌙 晚餐</option><option value="other">🍖 加餐</option></select></div>';
+    html += '</div>';
+    html += '<div class="form-group"><label>食物</label><div id="meal-items"></div>';
+    html += '<button type="button" class="btn-outline" id="btn-add-meal-item" style="margin-top:6px">+ 添加食物</button></div>';
+    html += '<div class="form-group"><label>备注（点击输入框查看历史备注）</label><textarea name="note" id="note-input" placeholder="胃口如何、剩了多少..."></textarea>';
+    html += '<div class="quick-notes" id="quick-notes">';
+    DataManager.getCommonNotes().forEach(n => {
+      html += '<span class="quick-note-chip" data-note="' + Utils.escape(n) + '">' + Utils.escape(n.length > 12 ? n.slice(0,12)+'...' : n) + '</span>';
+    });
+    html += '<span class="quick-note-chip save-chip" id="btn-save-note">+ 保存当前备注</span>';
+    html += '</div></div>';
+    html += '<button type="submit" class="btn-primary">💾 保存喂食记录</button></form>';
+
+    $('#feeding-sub-record').innerHTML = html;
+
+    // Inventory data for dropdown
+    const inv = DataManager.getSection('inventory').filter(i => i.isActive);
+    const addMealRow = () => {
+      const row = Utils.el('div', { className: 'meal-item-row' });
+      const catSel = Utils.el('select', { name: 'category' });
+      [{ value: 'staple', label: '主食' }, { value: 'snack', label: '零食' }, { value: 'supplement', label: '营养品' }, { value: 'medicine', label: '药品' }].forEach(c => catSel.appendChild(Utils.el('option', { value: c.value }, c.label)));
+      row.appendChild(catSel);
+      const ddWrap = Utils.el('div', { className: 'food-dropdown-wrap' });
+      const nameInput = Utils.el('input', { type: 'text', name: 'name', placeholder: '食物名称（可从库存选择）', autocomplete: 'off' });
+      const ddList = Utils.el('div', { className: 'food-dropdown-list' });
+      ddWrap.appendChild(nameInput); ddWrap.appendChild(ddList);
+      row.appendChild(ddWrap);
+      row.appendChild(Utils.el('input', { type: 'number', name: 'amount', placeholder: '数量', step: 'any' }));
+      const unitSel = Utils.el('select', { name: 'unit' });
+      CONFIG.MEAL_UNITS.forEach(u => unitSel.appendChild(Utils.el('option', { value: u }, u)));
+      row.appendChild(unitSel);
+      const rmBtn = Utils.el('button', { type: 'button', className: 'btn-remove', onClick() { row.remove(); } }, '✕');
+      row.appendChild(rmBtn);
+      $('#meal-items').appendChild(row);
+
+      const catGroups = { staple: '🍖 主食', snack: '🍪 零食', supplement: '💊 营养品', medicine: '💉 药品' };
+      const updateDropdown = (filter) => {
+        ddList.innerHTML = '';
+        const selCat = catSel.value;
+        Object.keys(catGroups).forEach(cat => {
+          const catItems = inv.filter(i => i.category === cat && (!filter || i.name.toLowerCase().includes(filter.toLowerCase())));
+          if (!catItems.length) return;
+          ddList.appendChild(Utils.el('div', { className: 'food-dropdown-group' }, catGroups[cat]));
+          catItems.forEach(item => {
+            ddList.appendChild(Utils.el('div', { className: 'food-dropdown-item', onClick() { nameInput.value = item.name; catSel.value = item.category; ddList.classList.remove('show'); } }, Utils.escape(item.name)));
+          });
+        });
+        const fv = filter || nameInput.value.trim();
+        if (fv) ddList.appendChild(Utils.el('div', { className: 'food-dropdown-item custom', onClick() { nameInput.value = fv; ddList.classList.remove('show'); } }, '✏️ 手动输入: "' + Utils.escape(fv) + '"'));
+        ddList.classList.toggle('show', ddList.children.length > 0);
+      };
+      nameInput.onfocus = () => updateDropdown();
+      nameInput.oninput = () => updateDropdown(nameInput.value);
+      nameInput.onblur = () => setTimeout(() => ddList.classList.remove('show'), 200);
+      catSel.onchange = () => { if (nameInput.value) updateDropdown(nameInput.value); };
+    };
+    addMealRow();
+    $('#btn-add-meal-item').onclick = addMealRow;
+
+    // Form submit
+    $('#form-feeding').onsubmit = function(e) {
+      e.preventDefault();
+      const fd = new FormData(this);
+      const date = fd.get('date');
+      const timeOfDay = fd.get('timeOfDay');
+
+      // Check duplicate
+      const existing = DataManager.getTodayFeeding().filter(r => r.date === date && r.timeOfDay === timeOfDay);
+      if (existing.length > 0 && date === Utils.todayStr()) {
+        if (!confirm('今天该时段已有喂食记录，是否继续添加？')) return;
+      }
+
+      const items = [];
+      $$('.meal-item-row', this).forEach(row => {
+        const name = row.querySelector('[name="name"]').value.trim();
+        const amount = row.querySelector('[name="amount"]').value;
+        if (name) {
+          items.push({
+            category: row.querySelector('[name="category"]').value,
+            name: name,
+            amount: amount || '',
+            unit: row.querySelector('[name="unit"]').value
+          });
+        }
+      });
+
+      if (items.length === 0) { showToast('请至少添加一种食物', 'danger'); return; }
+
+      const noteText = fd.get('note') || '';
+      if (noteText.trim() && !DataManager.getCommonNotes().includes(noteText.trim())) {
+        DataManager.addCommonNote(noteText.trim());
+      }
+      DataManager.addRecord('feedingRecords', {
+        date, timeOfDay,
+        mealLabel: timeOfDay === 'morning' ? '早餐' : timeOfDay === 'evening' ? '晚餐' : '加餐',
+        items, note: noteText
+      });
+      showToast('✅ 喂食记录已保存', 'success');
+      UIRenderer.renderFeedingRecord();
+      UIRenderer.renderDashboard();
+      Router.updateNavBadges();
+    };
+
+    // Quick notes click
+    $$('.quick-note-chip', $('#feeding-sub-record')).forEach(chip => {
+      chip.onclick = function() {
+        if (this.id === 'btn-save-note') {
+          const nv = $('#note-input').value.trim();
+          if (nv && !DataManager.getCommonNotes().includes(nv)) {
+            DataManager.addCommonNote(nv);
+            showToast('✅ 备注已保存为常用', 'success');
+            UIRenderer.renderFeedingRecord();
+          }
+          return;
+        }
+        $('#note-input').value = this.dataset.note;
+      };
+    });
+  },
+
+  // ----- Feeding: Inventory -----
+  renderInventory() {
+    const items = DataManager.getSection('inventory');
+    let html = '<div class="inventory-grid">';
+    if (items.length === 0) {
+      html += '<div class="empty-state"><div class="empty-icon">📦</div><p>还没有库存记录</p></div>';
+    }
+    items.forEach(item => {
+      const pct = item.totalAmount > 0 ? Math.round(item.remainingAmount / item.totalAmount * 100) : 0;
+      let pctClass = '';
+      if (pct <= 10) pctClass = 'critical';
+      else if (pct <= 25) pctClass = 'low';
+
+      let daysOpenStr = '';
+      if (item.openDate) {
+        const daysOpen = Utils.daysBetween(new Date(item.openDate + 'T00:00:00'), Utils.todayDate());
+        daysOpenStr = '<span>' + (daysOpen > CONFIG.FOOD_OPEN_WARN_DAYS ? '⚠️ ' : '') + '已开封 ' + daysOpen + ' 天</span>';
+      }
+
+      html += '<div class="inv-card">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:start">';
+      html += '<div><h4>' + Utils.escape(item.name) + '</h4>';
+      if (item.brand) html += '<span class="brand">' + Utils.escape(item.brand) + '</span>';
+      html += '</div>';
+      html += '<div style="display:flex;gap:4px">';
+      html += '<button class="btn-sm btn-outline" data-action="edit-inv" data-id="' + item.id + '">✏️</button>';
+      html += '<button class="btn-sm btn-danger" data-action="delete-inv" data-id="' + item.id + '">🗑️</button>';
+      html += '</div></div>';
+      html += '<div class="progress-wrap"><div class="progress-fill ' + pctClass + '" style="width:' + pct + '%"></div></div>';
+      html += '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary)">';
+      html += '<span>剩余 ' + Number(item.remainingAmount).toFixed(item.totalUnit === 'g' ? 0 : 1) + ' / ' + item.totalAmount + ' ' + item.totalUnit + ' (' + pct + '%)</span>';
+      html += '</div>';
+      html += '<div class="inv-meta">' + daysOpenStr;
+      if (item.expiryDate) html += '<span>保质至 ' + item.expiryDate + '</span>';
+      html += '</div>';
+      if (item.note) html += '<div class="inv-meta" style="margin-top:4px">📝 ' + Utils.escape(item.note) + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '<button class="btn-add" id="btn-add-inventory">➕ 添加库存</button>';
+
+    $('#feeding-sub-inventory').innerHTML = html;
+
+    // Event delegation for buttons
+    $('#feeding-sub-inventory').onclick = function(e) {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === 'edit-inv') UIRenderer._showInventoryForm(DataManager.getSection('inventory').find(x => x.id === id));
+      else if (action === 'delete-inv') UIRenderer._handleDelete('inventory', id, () => UIRenderer.renderInventory());
+    };
+    $('#btn-add-inventory').onclick = () => UIRenderer._showInventoryForm(null);
+  },
+
+  // ----- Feeding: History -----
+  renderFeedingHistory() {
+    const records = [...DataManager.getSection('feedingRecords')].sort((a, b) => b.date.localeCompare(a.date));
+    let html = '<div class="form-group"><label>筛选月份</label><input type="month" id="history-month-filter"></div>';
+    html += '<div id="history-list">';
+
+    if (records.length === 0) {
+      html += '<div class="empty-state"><div class="empty-icon">🍽️</div><p>还没有喂食记录</p></div>';
+    }
+
+    let currentDay = '';
+    records.forEach(r => {
+      const dayLabel = r.date + ' ' + Utils.formatDate(r.date).split(' ').pop();
+      if (r.date !== currentDay) {
+        if (currentDay) html += '</div>';
+        html += '<div class="history-day"><h4>' + dayLabel + '</h4>';
+        currentDay = r.date;
+      }
+      const itemsStr = r.items.map(i => i.name + (i.amount ? ' ' + i.amount + i.unit : '')).join(' + ');
+      html += '<div class="history-meal ' + r.timeOfDay + '" style="display:flex;justify-content:space-between">';
+      html += '<span>' + (r.timeOfDay === 'morning' ? '☀️' : r.timeOfDay === 'evening' ? '🌙' : '🍖') + ' <strong>' + r.mealLabel + '</strong>: ' + Utils.escape(itemsStr) + '</span>';
+      html += '<span style="display:flex;gap:4px;flex-shrink:0">';
+      if (r.note) html += '<span style="font-size:11px;color:var(--color-text-muted)">' + Utils.escape(r.note) + '</span>';
+      html += '<button class="btn-sm btn-danger" data-action="delete-feed" data-id="' + r.id + '" style="font-size:10px;padding:2px 8px">✕</button>';
+      html += '</span></div>';
+    });
+    if (currentDay) html += '</div>';
+    html += '</div>';
+
+    $('#feeding-sub-history').innerHTML = html;
+
+    // Month filter
+    const monthFilter = $('#history-month-filter');
+    if (monthFilter) {
+      monthFilter.onchange = function() {
+        const val = this.value; // YYYY-MM
+        $$('.history-day').forEach(day => {
+          const dateText = day.querySelector('h4').textContent.trim();
+          const dateMatch = dateText.match(/^(\d{4}-\d{2})/);
+          if (dateMatch && val) {
+            day.style.display = dateMatch[1] === val ? '' : 'none';
+          } else {
+            day.style.display = '';
+          }
+        });
+      };
+    }
+
+    // Delete buttons
+    $('#feeding-sub-history').onclick = function(e) {
+      const btn = e.target.closest('[data-action="delete-feed"]');
+      if (!btn) return;
+      UIRenderer._handleDelete('feedingRecords', btn.dataset.id, () => {
+        UIRenderer.renderFeedingHistory();
+        UIRenderer.renderDashboard();
+      });
+    };
+  },
+
+  // ----- Health: Vaccine -----
+  renderVaccine() {
+    const records = [...DataManager.getSection('vaccineRecords')].sort((a, b) => b.date.localeCompare(a.date));
+    let html = '<div class="timeline">';
+    if (records.length === 0) {
+      html += '<div class="empty-state"><div class="empty-icon">💉</div><p>还没有疫苗记录</p></div>';
+    }
+    records.forEach(r => {
+      html += '<div class="timeline-item"><div class="timeline-dot"></div>';
+      html += '<div class="timeline-content card">';
+      html += '<h4>' + Utils.escape(r.vaccineName) + ' 第' + r.doseNumber + '针</h4>';
+      html += '<time>' + Utils.formatDate(r.date) + '</time>';
+      html += '<p>🏥 ' + Utils.escape(r.hospital) + ' | 💰 ' + Utils.fmtMoney(r.cost) + '</p>';
+      html += '<p>🏷️ ' + Utils.escape(r.brand) + (r.batchNumber ? ' · 批号 ' + Utils.escape(r.batchNumber) : '') + '</p>';
+      if (r.nextDueDate) {
+        const daysLeft = Utils.daysBetween(Utils.todayDate(), new Date(r.nextDueDate + 'T00:00:00'));
+        html += '<span class="badge-next">📅 下次: ' + r.nextDueDate + (daysLeft > 0 ? ' (还有' + daysLeft + '天)' : '') + '</span>';
+      }
+      if (r.note) html += '<p style="margin-top:4px;font-size:12px;color:var(--color-text-muted)">📝 ' + Utils.escape(r.note) + '</p>';
+      html += '<div class="card-actions">';
+      html += '<button class="btn-sm btn-outline" data-action="edit-vac" data-id="' + r.id + '">✏️</button>';
+      html += '<button class="btn-sm btn-danger" data-action="delete-vac" data-id="' + r.id + '">🗑️</button>';
+      html += '</div></div></div>';
+    });
+    html += '</div>';
+    html += '<button class="btn-add" id="btn-add-vaccine">➕ 添加疫苗记录</button>';
+
+    $('#health-sub-vaccine').innerHTML = html;
+    $('#health-sub-vaccine').onclick = function(e) {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === 'edit-vac') UIRenderer._showVaccineForm(DataManager.getSection('vaccineRecords').find(x => x.id === id));
+      else if (action === 'delete-vac') UIRenderer._handleDelete('vaccineRecords', id, () => UIRenderer.renderVaccine());
+    };
+    $('#btn-add-vaccine').onclick = () => UIRenderer._showVaccineForm(null);
+  },
+
+  // ----- Health: Checkup -----
+  renderCheckup() {
+    const records = [...DataManager.getSection('healthCheckRecords')].sort((a, b) => b.date.localeCompare(a.date));
+    let html = '';
+    if (records.length === 0) {
+      html += '<div class="empty-state"><div class="empty-icon">🩺</div><p>还没有体检记录</p></div>';
+    }
+    records.forEach(r => {
+      html += '<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap">';
+      html += '<h4 style="margin:0">🩺 ' + Utils.formatDate(r.date) + '</h4>';
+      html += '<span style="font-weight:600;color:var(--color-primary)">' + Utils.fmtMoney(r.totalCost) + '</span>';
+      html += '</div>';
+      html += '<p style="font-size:13px;color:var(--color-text-secondary)">🏥 ' + Utils.escape(r.hospital) + (r.chiefComplaint ? ' · ' + Utils.escape(r.chiefComplaint) : '') + '</p>';
+      if (r.weight) html += '<p style="font-size:12px;color:var(--color-text-muted)">⚖️ 体重: ' + r.weight + 'kg</p>';
+      if (r.examinationItems && r.examinationItems.length > 0) {
+        html += '<table class="data-table" style="margin-top:8px"><thead><tr><th>项目</th><th>结果</th><th>参考值</th><th>费用</th></tr></thead><tbody>';
+        r.examinationItems.forEach(ex => {
+          html += '<tr>';
+          html += '<td>' + Utils.escape(ex.name) + '</td>';
+          html += '<td style="font-weight:' + (ex.isAbnormal ? 'bold;color:var(--color-danger)' : '') + '">' + Utils.escape(ex.result) + ' ' + Utils.escape(ex.unit) + '</td>';
+          html += '<td style="font-size:11px;color:var(--color-text-muted)">' + Utils.escape(ex.referenceRange) + '</td>';
+          html += '<td>' + (ex.cost ? Utils.fmtMoney(ex.cost) : '') + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+      }
+      if (r.note) html += '<p style="margin-top:8px;font-size:12px;color:var(--color-text-muted)">📝 ' + Utils.escape(r.note) + '</p>';
+      html += '<div class="card-actions">';
+      html += '<button class="btn-sm btn-outline" data-action="edit-hc" data-id="' + r.id + '">✏️</button>';
+      html += '<button class="btn-sm btn-danger" data-action="delete-hc" data-id="' + r.id + '">🗑️</button>';
+      html += '</div></div>';
+    });
+    html += '<button class="btn-add" id="btn-add-checkup">➕ 添加体检记录</button>';
+
+    $('#health-sub-checkup').innerHTML = html;
+    $('#health-sub-checkup').onclick = function(e) {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === 'edit-hc') UIRenderer._showCheckupForm(DataManager.getSection('healthCheckRecords').find(x => x.id === id));
+      else if (action === 'delete-hc') UIRenderer._handleDelete('healthCheckRecords', id, () => UIRenderer.renderCheckup());
+    };
+    $('#btn-add-checkup').onclick = () => UIRenderer._showCheckupForm(null);
+  },
+
+  // ----- Health: Weight -----
+  renderWeight() {
+    const records = DataManager.getWeightRecordsSorted();
+    let html = '<canvas id="weight-chart" width="600" height="260"></canvas>';
+    if (records.length < 2) {
+      html += '<div class="empty-state" style="padding:10px"><p style="font-size:12px">📊 至少需要2条体重记录来生成趋势图</p></div>';
+    }
+    html += '<div class="weight-stats">';
+    if (records.length > 0) {
+      const latest = records[records.length - 1];
+      const first = records[0];
+      const change = latest.weight - first.weight;
+      const changeStr = change > 0 ? '+' + change.toFixed(1) : change.toFixed(1);
+      html += '<span>最新: ' + latest.weight.toFixed(1) + ' kg (' + latest.date + ')</span>';
+      html += '<span>总变化: ' + changeStr + ' kg</span>';
+      if (records.length >= 2) {
+        const prev = records[records.length - 2];
+        const recentChange = latest.weight - prev.weight;
+        html += '<span>最近变化: ' + (recentChange > 0 ? '+' : '') + recentChange.toFixed(1) + ' kg</span>';
+      }
+    } else {
+      html += '<span>暂无体重记录</span>';
+    }
+    html += '</div>';
+
+    // Inline add form
+    html += '<form id="form-weight-add" class="inline-form">';
+    html += '<input type="date" id="weight-date" value="' + Utils.todayStr() + '" required>';
+    html += '<input type="number" id="weight-value" step="0.1" min="0" max="20" placeholder="体重(kg)" required>';
+    html += '<button type="submit">+ 记录</button>';
+    html += '</form>';
+
+    // Table
+    html += '<table class="data-table"><thead><tr><th>日期</th><th>体重(kg)</th><th>变化</th><th>来源</th><th>操作</th></tr></thead><tbody>';
+    [...records].reverse().forEach((r, i, arr) => {
+      const prevIdx = arr.length - 1 - i + 1;
+      let changeHTML = '<span class="change-flat">—</span>';
+      if (prevIdx < records.length) {
+        const diff = r.weight - records[prevIdx - 1].weight;
+        if (diff > 0) changeHTML = '<span class="change-up">+' + diff.toFixed(2) + '</span>';
+        else if (diff < 0) changeHTML = '<span class="change-down">' + diff.toFixed(2) + '</span>';
+      }
+      html += '<tr>';
+      html += '<td>' + Utils.formatDate(r.date) + '</td>';
+      html += '<td><strong>' + r.weight.toFixed(2) + '</strong></td>';
+      html += '<td>' + changeHTML + '</td>';
+      html += '<td style="font-size:11px;color:var(--color-text-muted)">' + (r.source === 'health_check' ? '体检' : '手动') + '</td>';
+      html += '<td><button class="btn-sm btn-danger" data-action="delete-wt" data-id="' + r.id + '" style="font-size:10px;padding:2px 8px">✕</button></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+
+    $('#health-sub-weight').innerHTML = html;
+
+    // Chart
+    if (records.length >= 2) {
+      setTimeout(() => WeightChart.draw(records), 150);
+    }
+
+    // Weight form submit
+    const wtForm = $('#form-weight-add');
+    if (wtForm) {
+      wtForm.onsubmit = function(e) {
+        e.preventDefault();
+        const date = $('#weight-date').value;
+        const weight = parseFloat($('#weight-value').value);
+        if (!date || isNaN(weight) || weight <= 0) { showToast('请输入有效的日期和体重', 'danger'); return; }
+        DataManager.addRecord('weightRecords', { date, weight, source: 'manual' });
+        showToast('✅ 体重已记录', 'success');
+        UIRenderer.renderWeight();
+        UIRenderer.renderDashboard();
+      };
+    }
+
+    // Delete button
+    $('#health-sub-weight').onclick = function(e) {
+      const btn = e.target.closest('[data-action="delete-wt"]');
+      if (!btn) return;
+      UIRenderer._handleDelete('weightRecords', btn.dataset.id, () => {
+        UIRenderer.renderWeight();
+        UIRenderer.renderDashboard();
+      });
+    };
+  },
+
+  // ----- Medical -----
+  renderMedical() {
+    const records = [...DataManager.getSection('medicalRecords')].sort((a, b) => b.date.localeCompare(a.date));
+    let html = '';
+    if (records.length === 0) {
+      html += '<div class="empty-state"><div class="empty-icon">💊</div><p>还没有就医记录</p></div>';
+    }
+    records.forEach(r => {
+      html += '<div class="card medical-card">';
+      html += '<div class="medical-header">';
+      html += '<h4>' + Utils.formatDate(r.date) + (r.diagnosis ? ' · ' + Utils.escape(r.diagnosis) : '') + '</h4>';
+      html += '</div>';
+      html += '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px;font-size:13px">';
+      html += '<span class="cost-tag">💰 总花费 ' + Utils.fmtMoney(r.totalCost) + '</span>';
+      if (r.insuranceReimbursement) html += '<span class="insurance-tag">🏦 报销 ' + Utils.fmtMoney(r.insuranceReimbursement) + ' (' + (r.insuranceReimbursementPct || 0) + '%)</span>';
+      html += '<span class="actual-cost">💳 实付 ' + Utils.fmtMoney(r.actualCost || r.totalCost - (r.insuranceReimbursement || 0)) + '</span>';
+      html += '</div>';
+      html += '<div class="medical-detail">';
+      html += '<p>🏥 ' + Utils.escape(r.hospital) + '</p>';
+      if (r.symptoms) html += '<p>🤒 症状: ' + Utils.escape(r.symptoms) + '</p>';
+      if (r.examinationItems && r.examinationItems.length > 0) {
+        const exList = r.examinationItems.map(ex => Utils.escape(ex.name) + ' ' + Utils.fmtMoney(ex.cost)).join(' + ');
+        html += '<p>🔬 检查: ' + exList + '</p>';
+      }
+      if (r.medicineItems && r.medicineItems.length > 0) {
+        const medList = r.medicineItems.map(m => Utils.escape(m.name) + ' ' + Utils.fmtMoney(m.cost)).join(' + ');
+        html += '<p>💊 药品: ' + medList + '</p>';
+      }
+      if (r.followUpDate) html += '<p>📅 复诊: ' + r.followUpDate + '</p>';
+      if (r.note) html += '<p style="font-size:12px;color:var(--color-text-muted)">📝 ' + Utils.escape(r.note) + '</p>';
+      html += '</div>';
+      html += '<div class="card-actions">';
+      html += '<button class="btn-sm btn-outline" data-action="edit-med" data-id="' + r.id + '">✏️</button>';
+      html += '<button class="btn-sm btn-danger" data-action="delete-med" data-id="' + r.id + '">🗑️</button>';
+      html += '</div></div>';
+    });
+    $('#medical-list').innerHTML = html;
+
+    $('#view-medical').onclick = function(e) {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === 'edit-med') UIRenderer._showMedicalForm(DataManager.getSection('medicalRecords').find(x => x.id === id));
+      else if (action === 'delete-med') UIRenderer._handleDelete('medicalRecords', id, () => UIRenderer.renderMedical());
+    };
+    $('#btn-add-medical').onclick = () => UIRenderer._showMedicalForm(null);
+  },
+
+  // ----- Diary -----
+  renderDiary() {
+    const entries = [...DataManager.getSection('growthDiary')].sort((a, b) => b.date.localeCompare(a.date));
+    let html = '';
+    if (entries.length === 0) {
+      html += '<div class="empty-state"><div class="empty-icon">📖</div><p>还没有日记，记录糯米的成长瞬间吧~</p></div>';
+    }
+    entries.forEach(e => {
+      html += '<div class="timeline-item"><div class="timeline-dot">🐱</div>';
+      html += '<div class="timeline-content card">';
+      html += '<h4>' + Utils.escape(e.title) + '</h4>';
+      html += '<time>' + Utils.formatDate(e.date) + '</time>';
+      html += '<p style="margin-top:6px;white-space:pre-wrap">' + Utils.escape(e.content) + '</p>';
+      if (e.photos && e.photos.length > 0) {
+        html += '<div class="diary-photos">';
+        e.photos.forEach((p, i) => {
+          html += '<img src="' + p + '" alt="照片' + (i + 1) + '" class="diary-thumb" data-full="' + p + '" onclick="UIRenderer._showPhoto(\'' + p + '\')">';
+        });
+        html += '</div>';
+      }
+      html += '<div class="card-actions">';
+      html += '<button class="btn-sm btn-outline" data-action="edit-diary" data-id="' + e.id + '">✏️</button>';
+      html += '<button class="btn-sm btn-danger" data-action="delete-diary" data-id="' + e.id + '">🗑️</button>';
+      html += '</div></div></div>';
+    });
+    $('#diary-timeline').innerHTML = html;
+
+    $('#view-diary').onclick = function(e) {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === 'edit-diary') UIRenderer._showDiaryForm(DataManager.getSection('growthDiary').find(x => x.id === id));
+      else if (action === 'delete-diary') UIRenderer._handleDelete('growthDiary', id, () => UIRenderer.renderDiary());
+    };
+    $('#btn-add-diary').onclick = () => UIRenderer._showDiaryForm(null);
+  },
+
+  _showPhoto(src) {
+    const body = '<div style="text-align:center"><img src="' + src + '" class="diary-photo-full" alt="照片"></div>';
+    openModal('📷 查看照片', body, null);
+    $('#modal-footer').innerHTML = '';
+  },
+
+  // ----- Reminders -----
+  renderReminders(filter) {
+    filter = filter || 'today';
+    const cats = DataManager.getRemindersByFilter('all');
+    let display = [];
+    if (filter === 'overdue') display = cats.overdue;
+    else if (filter === 'today') display = cats.today;
+    else if (filter === 'upcoming') display = cats.upcoming;
+    else display = [...cats.overdue, ...cats.today, ...cats.upcoming, ...cats.completed];
+
+    let html = '';
+    if (display.length === 0) {
+      html += '<div class="empty-state"><div class="empty-icon">⏰</div><p>没有' + (filter === 'overdue' ? '已过期' : filter === 'today' ? '今日' : filter === 'upcoming' ? '即将到来' : '') + '的提醒</p></div>';
+    }
+    display.forEach(r => {
+      const effDate = r._effDate || r.date;
+      const isOverdue = effDate < Utils.todayStr();
+      const isToday = effDate === Utils.todayStr();
+      const typeInfo = CONFIG.REMINDER_TYPES.find(t => t.value === r.type) || { icon: '📌', label: '其他' };
+      html += '<div class="card reminder-card">';
+      html += '<span class="reminder-type-icon">' + typeInfo.icon + '</span>';
+      html += '<div>';
+      html += '<h4>' + Utils.escape(r.title) + '</h4>';
+      let dateClass = 'upcoming';
+      let datePrefix = '';
+      if (isOverdue) { dateClass = 'overdue'; datePrefix = '🔴 已过期 '; }
+      else if (isToday) { dateClass = 'today'; datePrefix = '🟡 今天 '; }
+      html += '<p class="reminder-date ' + dateClass + '">' + datePrefix + effDate + (r.repeatType !== 'none' ? ' · 🔄 ' + CONFIG.REPEAT_TYPES.find(t => t.value === r.repeatType).label : '') + '</p>';
+      if (r.note) html += '<p style="font-size:12px;color:var(--color-text-muted)">' + Utils.escape(r.note) + '</p>';
+      if (r.completedDate) html += '<p style="font-size:11px;color:var(--color-success)">✅ 上次完成: ' + r.completedDate + '</p>';
+      html += '</div>';
+      html += '<button class="btn-done" data-action="complete-rem" data-id="' + r.id + '">✅ 完成</button>';
+      html += '<button class="btn-sm btn-danger" data-action="delete-rem" data-id="' + r.id + '" style="font-size:10px;padding:2px 8px;flex-shrink:0">✕</button>';
+      html += '</div>';
+    });
+    $('#reminders-list').innerHTML = html;
+
+    // Event delegation
+    $('#reminders-list').onclick = function(e) {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === 'complete-rem') {
+        ReminderEngine.completeReminder(id);
+        showToast('✅ 提醒已完成', 'success');
+        UIRenderer.renderReminders(Router.currentReminderFilter);
+        Router.updateNavBadges();
+      } else if (action === 'delete-rem') {
+        UIRenderer._handleDelete('reminders', id, () => {
+          UIRenderer.renderReminders(Router.currentReminderFilter);
+          Router.updateNavBadges();
+        });
+      }
+    };
+    $('#btn-add-reminder').onclick = () => UIRenderer._showReminderForm(null);
+  },
+
+  // ===== Generic delete handler =====
+  async _handleDelete(section, id, onSuccess) {
+    const confirmed = await showConfirm('确定要删除这条记录吗？此操作无法撤销。');
+    if (confirmed) {
+      DataManager.deleteRecord(section, id);
+      showToast('🗑️ 已删除', 'success');
+      onSuccess();
+    }
+  },
+
+  // ===== Form: Inventory =====
+  _showInventoryForm(existing) {
+    const cats = ['staple', 'snack', 'supplement', 'medicine'];
+    const catLabels = { staple: '主食', snack: '零食', supplement: '营养品', medicine: '药品' };
+    let html = '<form id="modal-form-inv">';
+    html += '<div class="form-group"><label>类别</label><select name="category">';
+    cats.forEach(c => html += '<option value="' + c + '"' + (existing && existing.category === c ? ' selected' : '') + '>' + catLabels[c] + '</option>');
+    html += '</select></div>';
+    html += '<div class="form-group"><label>名称</label><input type="text" name="name" value="' + (existing ? Utils.escape(existing.name) : '') + '" required></div>';
+    html += '<div class="form-group"><label>品牌</label><input type="text" name="brand" value="' + (existing ? Utils.escape(existing.brand || '') : '') + '"></div>';
+    html += '<div class="form-row"><div class="form-group"><label>总量</label><input type="number" name="totalAmount" step="any" value="' + (existing ? existing.totalAmount : '') + '" required></div>';
+    html += '<div class="form-group"><label>单位</label><select name="totalUnit">';
+    CONFIG.MEAL_UNITS.forEach(u => html += '<option value="' + u + '"' + (existing && existing.totalUnit === u ? ' selected' : '') + '>' + u + '</option>');
+    html += '</select></div></div>';
+    html += '<div class="form-group"><label>剩余量</label><input type="number" name="remainingAmount" step="any" value="' + (existing ? existing.remainingAmount : '') + '" required></div>';
+    html += '<div class="form-row"><div class="form-group"><label>开封日期</label><input type="date" name="openDate" value="' + (existing && existing.openDate ? existing.openDate : '') + '"></div>';
+    html += '<div class="form-group"><label>保质期</label><input type="date" name="expiryDate" value="' + (existing && existing.expiryDate ? existing.expiryDate : '') + '"></div></div>';
+    html += '<div class="form-group"><label>备注</label><input type="text" name="note" value="' + (existing ? Utils.escape(existing.note || '') : '') + '"></div>';
+    html += '</form>';
+
+    openModal((existing ? '编辑' : '添加') + '库存', html, () => {
+      const fd = new FormData($('#modal-form-inv'));
+      const data = {
+        category: fd.get('category'),
+        name: fd.get('name').trim(),
+        brand: fd.get('brand').trim(),
+        packaging: 'bag',
+        totalAmount: parseFloat(fd.get('totalAmount')) || 0,
+        totalUnit: fd.get('totalUnit'),
+        remainingAmount: parseFloat(fd.get('remainingAmount')) || 0,
+        openDate: fd.get('openDate') || null,
+        expiryDate: fd.get('expiryDate') || null,
+        batchNumber: existing ? existing.batchNumber || '' : '',
+        note: fd.get('note').trim(),
+        isActive: true
+      };
+      if (!data.name) { showToast('请输入名称', 'danger'); return; }
+      if (existing) {
+        DataManager.updateRecord('inventory', existing.id, data);
+      } else {
+        DataManager.addRecord('inventory', data);
+      }
+      closeModal();
+      showToast('✅ 库存已保存', 'success');
+      UIRenderer.renderInventory();
+      UIRenderer.renderDashboard();
+    });
+  },
+
+  // ===== Form: Vaccine =====
+  _showVaccineForm(existing) {
+    let html = '<form id="modal-form-vac">';
+    html += '<div class="form-group"><label>疫苗名称</label><input type="text" name="vaccineName" value="' + (existing ? Utils.escape(existing.vaccineName) : '猫三联（妙三多）') + '" required></div>';
+    html += '<div class="form-row"><div class="form-group"><label>当前剂次</label><input type="number" name="doseNumber" value="' + (existing ? existing.doseNumber : '') + '" min="1"></div>';
+    html += '<div class="form-group"><label>总剂次</label><input type="number" name="totalDoses" value="' + (existing ? existing.totalDoses : '3') + '" min="1"></div></div>';
+    html += '<div class="form-row"><div class="form-group"><label>接种日期</label><input type="date" name="date" value="' + (existing ? existing.date : Utils.todayStr()) + '" required></div>';
+    html += '<div class="form-group"><label>下次日期</label><input type="date" name="nextDueDate" value="' + (existing && existing.nextDueDate ? existing.nextDueDate : '') + '"></div></div>';
+    html += '<div class="form-row"><div class="form-group"><label>品牌</label><input type="text" name="brand" value="' + (existing ? Utils.escape(existing.brand || '') : '妙三多') + '"></div>';
+    html += '<div class="form-group"><label>厂家</label><input type="text" name="manufacturer" value="' + (existing ? Utils.escape(existing.manufacturer || '') : '硕腾') + '"></div></div>';
+    html += '<div class="form-group"><label>医院</label><input type="text" name="hospital" value="' + (existing ? Utils.escape(existing.hospital || '') : '') + '"></div>';
+    html += '<div class="form-row"><div class="form-group"><label>费用(元)</label><input type="number" name="cost" step="0.01" value="' + (existing ? existing.cost : '') + '"></div>';
+    html += '<div class="form-group"><label>批号</label><input type="text" name="batchNumber" value="' + (existing ? Utils.escape(existing.batchNumber || '') : '') + '"></div></div>';
+    html += '<div class="form-group"><label>备注</label><input type="text" name="note" value="' + (existing ? Utils.escape(existing.note || '') : '') + '"></div>';
+    html += '</form>';
+
+    openModal((existing ? '编辑' : '添加') + '疫苗记录', html, () => {
+      const fd = new FormData($('#modal-form-vac'));
+      const data = {
+        vaccineName: fd.get('vaccineName').trim(),
+        doseNumber: parseInt(fd.get('doseNumber')) || 1,
+        totalDoses: parseInt(fd.get('totalDoses')) || 3,
+        date: fd.get('date'),
+        nextDueDate: fd.get('nextDueDate') || null,
+        brand: fd.get('brand').trim(),
+        manufacturer: fd.get('manufacturer').trim(),
+        hospital: fd.get('hospital').trim(),
+        cost: parseFloat(fd.get('cost')) || 0,
+        batchNumber: fd.get('batchNumber').trim(),
+        note: fd.get('note').trim()
+      };
+      if (!data.vaccineName) { showToast('请输入疫苗名称', 'danger'); return; }
+      if (existing) DataManager.updateRecord('vaccineRecords', existing.id, data);
+      else DataManager.addRecord('vaccineRecords', data);
+      closeModal();
+      showToast('✅ 疫苗记录已保存', 'success');
+      UIRenderer.renderVaccine();
+      UIRenderer.renderDashboard();
+    });
+  },
+
+  // ===== Form: Checkup =====
+  _showCheckupForm(existing) {
+    let html = '<form id="modal-form-hc">';
+    html += '<div class="form-row"><div class="form-group"><label>日期</label><input type="date" name="date" value="' + (existing ? existing.date : Utils.todayStr()) + '" required></div>';
+    html += '<div class="form-group"><label>类型</label><select name="type"><option value="routine"' + (existing && existing.type === 'routine' ? ' selected' : '') + '>常规体检</option><option value="emergency"' + (existing && existing.type === 'emergency' ? ' selected' : '') + '>急诊</option><option value="follow-up"' + (existing && existing.type === 'follow-up' ? ' selected' : '') + '>复查</option></select></div></div>';
+    html += '<div class="form-row"><div class="form-group"><label>医院</label><input type="text" name="hospital" value="' + (existing ? Utils.escape(existing.hospital || '') : '') + '" required></div>';
+    html += '<div class="form-group"><label>体重(kg)</label><input type="number" name="weight" step="0.01" value="' + (existing && existing.weight ? existing.weight : '') + '"></div></div>';
+    html += '<div class="form-group"><label>主诉</label><input type="text" name="chiefComplaint" value="' + (existing ? Utils.escape(existing.chiefComplaint || '') : '') + '"></div>';
+    html += '<div class="form-group"><label>检查项目</label><div id="exam-items"></div>';
+    html += '<button type="button" class="btn-outline" id="btn-add-exam" style="margin-top:6px">+ 添加检查项目</button></div>';
+    html += '<div class="form-row"><div class="form-group"><label>总费用(元)</label><input type="number" name="totalCost" step="0.01" value="' + (existing ? existing.totalCost : '') + '"></div></div>';
+    html += '<div class="form-group"><label>备注</label><textarea name="note">' + (existing ? Utils.escape(existing.note || '') : '') + '</textarea></div>';
+    html += '</form>';
+
+    openModal((existing ? '编辑' : '添加') + '体检记录', html, () => {
+      const examItems = [];
+      $$('.exam-item-row', $('#modal-body')).forEach(row => {
+        const name = row.querySelector('[name="examName"]').value.trim();
+        const result = row.querySelector('[name="examResult"]').value;
+        const unit = row.querySelector('[name="examUnit"]').value;
+        const ref = row.querySelector('[name="examRef"]').value;
+        const cost = parseFloat(row.querySelector('[name="examCost"]').value) || 0;
+        const isAbnormal = row.querySelector('[name="examAbnormal"]').checked;
+        if (name) examItems.push({ name, result, unit, referenceRange: ref, isAbnormal, cost });
+      });
+
+      const fd = new FormData($('#modal-form-hc'));
+      const data = {
+        date: fd.get('date'),
+        type: fd.get('type'),
+        hospital: fd.get('hospital').trim(),
+        chiefComplaint: fd.get('chiefComplaint').trim(),
+        weight: fd.get('weight') ? parseFloat(fd.get('weight')) : null,
+        examinationItems: examItems,
+        totalCost: parseFloat(fd.get('totalCost')) || 0,
+        note: fd.get('note').trim()
+      };
+      if (!data.hospital) { showToast('请输入医院名称', 'danger'); return; }
+      if (existing) DataManager.updateRecord('healthCheckRecords', existing.id, data);
+      else DataManager.addRecord('healthCheckRecords', data);
+      closeModal();
+      showToast('✅ 体检记录已保存', 'success');
+      UIRenderer.renderCheckup();
+    });
+
+    const addExamRow = () => {
+      const row = Utils.el('div', { className: 'exam-item-row' });
+      row.appendChild(Utils.el('input', { type:'text', name:'examName', placeholder:'项目名', style:'flex:2' }));
+      row.appendChild(Utils.el('input', { type:'text', name:'examResult', placeholder:'结果' }));
+      row.appendChild(Utils.el('input', { type:'text', name:'examUnit', placeholder:'单位', style:'max-width:50px' }));
+      row.appendChild(Utils.el('input', { type:'text', name:'examRef', placeholder:'参考值', style:'max-width:80px;font-size:12px' }));
+      row.appendChild(Utils.el('input', { type:'number', name:'examCost', placeholder:'费用', style:'max-width:60px', step:'0.01' }));
+      row.appendChild(Utils.el('label', { style:'font-size:11px;white-space:nowrap;display:flex;align-items:center;gap:2px' }, Utils.el('input', { type:'checkbox', name:'examAbnormal' }), '异常'));
+      row.appendChild(Utils.el('button', { type:'button', className:'btn-remove', onClick() { row.remove(); } }, '✕'));
+      $('#exam-items').appendChild(row);
+    };
+    // Add existing items
+    if (existing && existing.examinationItems) {
+      existing.examinationItems.forEach(ex => {
+        addExamRow();
+        const row = $('#exam-items').lastChild;
+        row.querySelector('[name="examName"]').value = ex.name || '';
+        row.querySelector('[name="examResult"]').value = ex.result || '';
+        row.querySelector('[name="examUnit"]').value = ex.unit || '';
+        row.querySelector('[name="examRef"]').value = ex.referenceRange || '';
+        row.querySelector('[name="examCost"]').value = ex.cost || '';
+        row.querySelector('[name="examAbnormal"]').checked = ex.isAbnormal || false;
+      });
+    } else {
+      addExamRow();
+    }
+    $('#btn-add-exam').onclick = addExamRow;
+  },
+
+  // ===== Form: Medical =====
+  _showMedicalForm(existing) {
+    let html = '<form id="modal-form-med">';
+    html += '<div class="form-row"><div class="form-group"><label>就诊日期</label><input type="date" name="date" value="' + (existing ? existing.date : Utils.todayStr()) + '" required></div>';
+    html += '<div class="form-group"><label>医院</label><input type="text" name="hospital" value="' + (existing ? Utils.escape(existing.hospital || '') : '') + '" required></div></div>';
+    html += '<div class="form-group"><label>症状</label><input type="text" name="symptoms" value="' + (existing ? Utils.escape(existing.symptoms || '') : '') + '"></div>';
+    html += '<div class="form-group"><label>诊断</label><input type="text" name="diagnosis" value="' + (existing ? Utils.escape(existing.diagnosis || '') : '') + '"></div>';
+    html += '<div class="form-group"><label>检查项目及费用</label><div id="med-exam-items"></div>';
+    html += '<button type="button" class="btn-outline" id="btn-add-med-exam" style="margin-top:6px">+ 添加检查</button></div>';
+    html += '<div class="form-group"><label>药品及费用</label><div id="med-med-items"></div>';
+    html += '<button type="button" class="btn-outline" id="btn-add-med-med" style="margin-top:6px">+ 添加药品</button></div>';
+    html += '<div class="form-row"><div class="form-group"><label>总花费(元)</label><input type="number" name="totalCost" step="0.01" value="' + (existing ? existing.totalCost : '') + '"></div>';
+    html += '<div class="form-group"><label>保险报销(元)</label><input type="number" name="insuranceReimbursement" step="0.01" value="' + (existing ? existing.insuranceReimbursement || '' : '') + '"></div></div>';
+    html += '<div class="form-row"><div class="form-group"><label>报销比例(%)</label><input type="number" name="insuranceReimbursementPct" step="0.1" value="' + (existing ? existing.insuranceReimbursementPct || '' : '') + '"></div>';
+    html += '<div class="form-group"><label>复诊日期</label><input type="date" name="followUpDate" value="' + (existing && existing.followUpDate ? existing.followUpDate : '') + '"></div></div>';
+    html += '<div class="form-group"><label>备注</label><textarea name="note">' + (existing ? Utils.escape(existing.note || '') : '') + '</textarea></div>';
+    html += '</form>';
+
+    openModal((existing ? '编辑' : '添加') + '就医记录', html, () => {
+      const examItems = [];
+      $$('.med-exam-row', $('#modal-body')).forEach(row => {
+        const name = row.querySelector('[name="examName"]').value.trim();
+        const cost = parseFloat(row.querySelector('[name="examCost"]').value) || 0;
+        if (name) examItems.push({ name, cost });
+      });
+      const medItems = [];
+      $$('.med-med-row', $('#modal-body')).forEach(row => {
+        const name = row.querySelector('[name="medName"]').value.trim();
+        const dosage = row.querySelector('[name="medDosage"]').value.trim();
+        const cost = parseFloat(row.querySelector('[name="medCost"]').value) || 0;
+        if (name) medItems.push({ name, dosage, cost });
+      });
+
+      const fd = new FormData($('#modal-form-med'));
+      const totalCost = parseFloat(fd.get('totalCost')) || 0;
+      const insurance = parseFloat(fd.get('insuranceReimbursement')) || 0;
+      const data = {
+        date: fd.get('date'),
+        hospital: fd.get('hospital').trim(),
+        symptoms: fd.get('symptoms').trim(),
+        diagnosis: fd.get('diagnosis').trim(),
+        examinationItems: examItems,
+        medicineItems: medItems,
+        totalCost,
+        insuranceReimbursement: insurance,
+        insuranceReimbursementPct: parseFloat(fd.get('insuranceReimbursementPct')) || 0,
+        actualCost: totalCost - insurance,
+        followUpDate: fd.get('followUpDate') || null,
+        note: fd.get('note').trim()
+      };
+      if (!data.hospital) { showToast('请输入医院名称', 'danger'); return; }
+      if (existing) DataManager.updateRecord('medicalRecords', existing.id, data);
+      else DataManager.addRecord('medicalRecords', data);
+      closeModal();
+      showToast('✅ 就医记录已保存', 'success');
+      UIRenderer.renderMedical();
+    });
+
+    // Add exam row helper
+    const addMedExamRow = (name, cost) => {
+      const row = Utils.el('div', { className: 'med-exam-row meal-item-row' });
+      row.appendChild(Utils.el('input', { type:'text', name:'examName', placeholder:'检查项目', value: name || '', style:'flex:2' }));
+      row.appendChild(Utils.el('input', { type:'number', name:'examCost', placeholder:'费用', value: cost || '', step:'0.01' }));
+      row.appendChild(Utils.el('button', { type:'button', className:'btn-remove', onClick() { row.remove(); } }, '✕'));
+      $('#med-exam-items').appendChild(row);
+    };
+    const addMedMedRow = (name, dosage, cost) => {
+      const row = Utils.el('div', { className: 'med-med-row meal-item-row' });
+      row.appendChild(Utils.el('input', { type:'text', name:'medName', placeholder:'药品名', value: name || '', style:'flex:2' }));
+      row.appendChild(Utils.el('input', { type:'text', name:'medDosage', placeholder:'用法用量', value: dosage || '' }));
+      row.appendChild(Utils.el('input', { type:'number', name:'medCost', placeholder:'费用', value: cost || '', step:'0.01' }));
+      row.appendChild(Utils.el('button', { type:'button', className:'btn-remove', onClick() { row.remove(); } }, '✕'));
+      $('#med-med-items').appendChild(row);
+    };
+
+    if (existing) {
+      (existing.examinationItems || []).forEach(ex => addMedExamRow(ex.name, ex.cost));
+      (existing.medicineItems || []).forEach(m => addMedMedRow(m.name, m.dosage, m.cost));
+    }
+    if (!$('#med-exam-items').children.length) addMedExamRow();
+    if (!$('#med-med-items').children.length) addMedMedRow();
+
+    $('#btn-add-med-exam').onclick = () => addMedExamRow();
+    $('#btn-add-med-med').onclick = () => addMedMedRow();
+  },
+
+  // ===== Form: Diary =====
+  _showDiaryForm(existing) {
+    let html = '<form id="modal-form-diary">';
+    html += '<div class="form-row"><div class="form-group"><label>日期</label><input type="date" name="date" value="' + (existing ? existing.date : Utils.todayStr()) + '" required></div>';
+    html += '<div class="form-group"><label>标题</label><input type="text" name="title" value="' + (existing ? Utils.escape(existing.title) : '') + '" required></div></div>';
+    html += '<div class="form-group"><label>内容</label><textarea name="content" style="min-height:100px">' + (existing ? Utils.escape(existing.content) : '') + '</textarea></div>';
+    html += '<div class="form-group"><label>照片 <small style="font-weight:400;color:var(--color-text-muted)">（可选，自动压缩）</small></label>';
+    html += '<div id="diary-photos-preview">';
+    if (existing && existing.photos) {
+      existing.photos.forEach(p => {
+        html += '<div style="display:inline-block;position:relative;margin:4px">';
+        html += '<img src="' + p + '" style="width:60px;height:60px;object-fit:cover;border-radius:6px">';
+        html += '<button type="button" class="btn-remove" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;font-size:12px;background:var(--color-card);border-radius:50%" onclick="this.parentElement.remove()">✕</button>';
+        html += '</div>';
+      });
+    }
+    html += '</div>';
+    html += '<button type="button" class="btn-outline" id="btn-pick-photos" style="margin-top:6px">📷 选择照片</button></div>';
+    html += '</form>';
+    // Hidden store for existing photos that weren't removed
+    html += '<input type="hidden" id="diary-kept-photos" value="' + (existing && existing.photos ? Utils.escape(JSON.stringify(existing.photos)) : '[]') + '">';
+
+    openModal((existing ? '编辑' : '写') + '日记', html, async () => {
+      const fd = new FormData($('#modal-form-diary'));
+      let photos = [];
+      try { photos = JSON.parse($('#diary-kept-photos').value || '[]'); } catch(e) { photos = []; }
+
+      // Collect remaining preview images
+      $$('#diary-photos-preview img', $('#modal-body')).forEach(img => {
+        if (!photos.includes(img.src)) photos.push(img.src);
+      });
+
+      const data = {
+        date: fd.get('date'),
+        title: fd.get('title').trim(),
+        content: fd.get('content').trim(),
+        photos
+      };
+      if (!data.title) { showToast('请输入标题', 'danger'); return; }
+      if (existing) DataManager.updateRecord('growthDiary', existing.id, data);
+      else DataManager.addRecord('growthDiary', data);
+      closeModal();
+      showToast('✅ 日记已保存', 'success');
+      UIRenderer.renderDiary();
+    });
+
+    // Photo picker
+    $('#btn-pick-photos').onclick = () => $('#hidden-photo-input').click();
+    // Update the global handler to handle diary photo upload
+    $('#hidden-photo-input').dataset.target = 'diary-photos-preview';
+  },
+
+  // ===== Form: Reminder =====
+  _showReminderForm(existing) {
+    let html = '<form id="modal-form-rem">';
+    html += '<div class="form-group"><label>提醒类型</label><select name="type">';
+    CONFIG.REMINDER_TYPES.forEach(t => html += '<option value="' + t.value + '"' + (existing && existing.type === t.value ? ' selected' : '') + '>' + t.label + '</option>');
+    html += '</select></div>';
+    html += '<div class="form-group"><label>标题</label><input type="text" name="title" value="' + (existing ? Utils.escape(existing.title) : '') + '" required></div>';
+    html += '<div class="form-row"><div class="form-group"><label>日期</label><input type="date" name="date" value="' + (existing ? existing.date : Utils.todayStr()) + '" required></div>';
+    html += '<div class="form-group"><label>重复</label><select name="repeatType">';
+    CONFIG.REPEAT_TYPES.forEach(t => html += '<option value="' + t.value + '"' + (existing && existing.repeatType === t.value ? ' selected' : '') + '>' + t.label + '</option>');
+    html += '</select></div></div>';
+    html += '<div class="form-row" id="rem-interval-row" style="display:' + (existing && existing.repeatType !== 'none' ? '' : 'none') + '"><div class="form-group"><label>重复间隔</label><input type="number" name="repeatInterval" value="' + (existing ? existing.repeatInterval || '1' : '1') + '" min="1"></div></div>';
+    html += '<div class="form-group"><label>备注</label><input type="text" name="note" value="' + (existing ? Utils.escape(existing.note || '') : '') + '"></div>';
+    html += '</form>';
+
+    openModal((existing ? '编辑' : '添加') + '提醒', html, () => {
+      const fd = new FormData($('#modal-form-rem'));
+      const repeatType = fd.get('repeatType');
+      const data = {
+        type: fd.get('type'),
+        title: fd.get('title').trim(),
+        date: fd.get('date'),
+        repeatType,
+        repeatInterval: repeatType !== 'none' ? (parseInt(fd.get('repeatInterval')) || 1) : 0,
+        completed: existing ? existing.completed : false,
+        completedDate: existing ? existing.completedDate : null,
+        note: fd.get('note').trim()
+      };
+      if (!data.title) { showToast('请输入标题', 'danger'); return; }
+      if (existing) DataManager.updateRecord('reminders', existing.id, data);
+      else DataManager.addRecord('reminders', data);
+      closeModal();
+      showToast('✅ 提醒已保存', 'success');
+      UIRenderer.renderReminders(Router.currentReminderFilter);
+      Router.updateNavBadges();
+    });
+
+    // Toggle repeat interval visibility
+    $('#modal-body').querySelector('[name="repeatType"]').onchange = function() {
+      $('#rem-interval-row').style.display = this.value === 'none' ? 'none' : '';
+    };
+  }
+};
+
+// =========================== ROUTER ===========================
+const Router = {
+  currentTab: 'dashboard',
+  currentSubTab: '',
+  currentReminderFilter: 'today',
+
+  init() {
+    // Main tab navigation
+    $$('#app-nav .nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => this.navigate(tab.dataset.tab));
+    });
+
+    // Sub navigation - Feeding
+    $$('#feeding-sub-nav button').forEach(btn => {
+      btn.addEventListener('click', () => this.navigateSub('feeding', btn.dataset.sub));
+    });
+
+    // Sub navigation - Health
+    $$('#health-sub-nav button').forEach(btn => {
+      btn.addEventListener('click', () => this.navigateSub('health', btn.dataset.sub));
+    });
+
+    // Sub navigation - Reminders filter
+    $$('#reminders-sub-nav button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.currentReminderFilter = btn.dataset.filter;
+        $$('#reminders-sub-nav button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        UIRenderer.renderReminders(btn.dataset.filter);
+      });
+    });
+
+    this.navigate('dashboard');
+  },
+
+  navigate(tab) {
+    this.currentTab = tab;
+    this.currentSubTab = '';
+
+    // Update view visibility
+    $$('.view').forEach(v => v.classList.remove('active'));
+    const viewEl = $('#view-' + tab);
+    if (viewEl) viewEl.classList.add('active');
+
+    // Update nav active state
+    $$('#app-nav .nav-tab').forEach(t => t.classList.remove('active'));
+    const tabBtn = $('#app-nav .nav-tab[data-tab="' + tab + '"]');
+    if (tabBtn) tabBtn.classList.add('active');
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Render
+    this._render();
+  },
+
+  navigateSub(tab, sub) {
+    this.currentTab = tab;
+    this.currentSubTab = sub;
+
+    // Update sub nav
+    const subNav = $('#' + tab + '-sub-nav');
+    if (subNav) {
+      subNav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      const activeBtn = subNav.querySelector('[data-sub="' + sub + '"]');
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    // Show/hide sub views
+    const parent = $('#view-' + tab);
+    parent.querySelectorAll('.sub-view').forEach(sv => sv.style.display = 'none');
+    const target = $('#view-' + tab + ' #' + tab + '-sub-' + sub);
+    if (target) target.style.display = '';
+
+    this._render();
+  },
+
+  _render() {
+    switch (this.currentTab) {
+      case 'dashboard': UIRenderer.renderDashboard(); break;
+      case 'feeding':
+        if (!this.currentSubTab) this.currentSubTab = 'record';
+        if (this.currentSubTab === 'record') UIRenderer.renderFeedingRecord();
+        else if (this.currentSubTab === 'excretion') UIRenderer.renderExcretion();
+        else if (this.currentSubTab === 'inventory') UIRenderer.renderInventory();
+        break;
+      case 'health':
+        if (!this.currentSubTab) this.currentSubTab = 'overview';
+        if (this.currentSubTab === 'overview') UIRenderer.renderHealthOverview();
+        else if (this.currentSubTab === 'vaccine') UIRenderer.renderVaccine();
+        else if (this.currentSubTab === 'deworming') UIRenderer.renderDeworming();
+        else if (this.currentSubTab === 'checkup') UIRenderer.renderCheckup();
+        else if (this.currentSubTab === 'weight') UIRenderer.renderWeight();
+        break;
+      case 'finance': UIRenderer.renderFinance(); break;
+      case 'diary': UIRenderer.renderDiary(); break;
+      case 'reminders': UIRenderer.renderReminders(this.currentReminderFilter); break;
+    }
+  },
+
+  updateNavBadges() {
+    const cats = DataManager.getRemindersByFilter('today');
+    const badge = $('#badge-reminders');
+    const count = cats.overdue.length + cats.today.length;
+    if (count > 0) {
+      badge.style.display = 'block';
+      badge.textContent = count;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+};
+
+// =========================== APP INIT ===========================
+document.addEventListener('DOMContentLoaded', () => {
+  // Init data
+  DataManager.init();
+
+  // Update header date
+  const now = new Date();
+  $('#header-date').textContent = now.toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+
+  // Init router
+  Router.init();
+  Router.updateNavBadges();
+
+  // Header actions
+  $('#btn-export').onclick = () => DataManager.exportJSON();
+  $('#btn-import').onclick = () => $('#hidden-import-input').click();
+
+  $('#hidden-import-input').onchange = async function() {
+    const file = this.files[0];
+    if (!file) return;
+    const confirmed = await showConfirm('导入数据将覆盖当前所有数据，确定继续？');
+    if (!confirmed) { this.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const success = DataManager.importJSON(e.target.result);
+      if (success) {
+        showToast('✅ 数据导入成功，即将刷新', 'success');
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        showToast('❌ 数据格式不正确', 'danger');
+      }
+    };
+    reader.readAsText(file);
+    this.value = '';
+  };
+
+  // Settings button - edit cat info
+  $('#btn-settings').onclick = () => UIRenderer._showCatInfoForm();
+
+  // Photo upload handler (for diary)
+  $('#hidden-photo-input').onchange = async function() {
+    const files = this.files;
+    if (!files.length) return;
+    const targetId = this.dataset.target || 'diary-photos-preview';
+    const target = $('#' + targetId);
+    if (!target) { this.value = ''; return; }
+
+    for (const file of files) {
+      try {
+        const base64 = await Utils.compressImage(file);
+        const wrapper = Utils.el('div', { style: 'display:inline-block;position:relative;margin:4px' });
+        const img = Utils.el('img', { src: base64, style: 'width:60px;height:60px;object-fit:cover;border-radius:6px' });
+        const rmBtn = Utils.el('button', {
+          type: 'button',
+          className: 'btn-remove',
+          style: 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;font-size:12px;background:var(--color-card);border-radius:50%',
+          onClick() { wrapper.remove(); }
+        }, '✕');
+        wrapper.appendChild(img);
+        wrapper.appendChild(rmBtn);
+        target.appendChild(wrapper);
+      } catch(e) {
+        showToast('⚠️ 图片处理失败', 'danger');
+      }
+    }
+    this.value = '';
+  };
+
+  // Avatar upload
+  $('#hidden-avatar-input').onchange = async function() {
+    const file = this.files[0];
+    if (!file) return;
+    try {
+      const base64 = await Utils.compressImage(file);
+      DataManager.updateCatInfo({ photo: base64 });
+      showToast('✅ 头像已更新', 'success');
+      UIRenderer.renderDashboard();
+    } catch(e) {
+      showToast('⚠️ 头像上传失败', 'danger');
+    }
+    this.value = '';
+  };
+
+  // Modal close events
+  $('#modal-close').onclick = closeModal;
+  $('#modal-overlay').onclick = function(e) { if (e.target === this) closeModal(); };
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+  // Global click handler for view-switch buttons
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-nav]');
+    if (btn) {
+      const tab = btn.dataset.nav;
+      Router.navigate(tab);
+    }
+  });
+});
+
+// ===== Cat Info Edit Form (attached to UIRenderer) =====
+UIRenderer._showCatInfoForm = function() {
+  const cat = DataManager.data().catInfo;
+  let html = '<form id="modal-form-cat">';
+  html += '<div style="text-align:center;margin-bottom:16px">';
+  html += '<div class="cat-avatar-large" style="margin:0 auto;cursor:pointer" id="modal-cat-avatar">' + (cat.photo ? '<img src="' + cat.photo + '" alt="">' : '🐱') + '</div>';
+  html += '<p style="font-size:11px;color:var(--color-text-muted);margin-top:4px">点击更换头像</p>';
+  html += '</div>';
+  html += '<div class="form-row"><div class="form-group"><label>名字</label><input type="text" name="name" value="' + Utils.escape(cat.name) + '" required></div>';
+  html += '<div class="form-group"><label>品种</label><input type="text" name="breed" value="' + Utils.escape(cat.breed) + '"></div></div>';
+  html += '<div class="form-row"><div class="form-group"><label>生日</label><input type="date" name="birthDate" value="' + cat.birthDate + '"></div>';
+  html += '<div class="form-group"><label>到家日期</label><input type="date" name="adoptionDate" value="' + cat.adoptionDate + '"></div></div>';
+  html += '<div class="form-row"><div class="form-group"><label>性别</label><select name="gender"><option value="female"' + (cat.gender === 'female' ? ' selected' : '') + '>♀ 妹妹</option><option value="male"' + (cat.gender === 'male' ? ' selected' : '') + '>♂ 弟弟</option></select></div>';
+  html += '<div class="form-group"><label>绝育状态</label><select name="fixed"><option value="0"' + (!cat.fixed ? ' selected' : '') + '>未绝育</option><option value="1"' + (cat.fixed ? ' selected' : '') + '>已绝育</option></select></div></div>';
+  html += '<div class="form-group"><label>花色</label><input type="text" name="color" value="' + Utils.escape(cat.color || '') + '"></div>';
+  html += '</form>';
+
+  openModal('编辑猫咪信息', html, () => {
+    const fd = new FormData($('#modal-form-cat'));
+    DataManager.updateCatInfo({
+      name: fd.get('name').trim(),
+      breed: fd.get('breed').trim(),
+      birthDate: fd.get('birthDate'),
+      adoptionDate: fd.get('adoptionDate'),
+      gender: fd.get('gender'),
+      fixed: fd.get('fixed') === '1',
+      color: fd.get('color').trim()
+    });
+    closeModal();
+    showToast('✅ 猫咪信息已更新', 'success');
+    UIRenderer.renderDashboard();
+  });
+
+  // Avatar click
+  $('#modal-cat-avatar').onclick = () => $('#hidden-avatar-input').click();
+};
+</script>
+
+</body>
+</html>
+
+<script src="app.js?v=2"></script>

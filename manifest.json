@@ -1,0 +1,18 @@
+{
+  "name": "糯米饲养助手",
+  "short_name": "糯米助手",
+  "description": "糯米猫咪的日常喂养、健康管理工具",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#FFF5F0",
+  "theme_color": "#FF8C69",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
