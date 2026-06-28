@@ -727,8 +727,8 @@ label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap
 @media (max-width: 600px) {
   /* Stack 2-col grids on mobile */
   .card-grid-2col { grid-template-columns: 1fr; }
-  /* Date inputs: consistent sizing */
-  input[type="date"] { min-width: 0; }
+  /* Date inputs: same width as regular inputs */
+  input[type="date"] { min-width: 0; max-width: 100%; box-sizing: border-box; }
   /* Form rows: allow wrap, 2 per line */
   .form-row { flex-wrap: wrap; }
   .form-row > * { flex: 1 1 45%; min-width: 80px; }
@@ -784,8 +784,8 @@ label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap
     </div>
   </div>
   <div class="header-actions">
-    <button class="btn-icon" id="btn-import" title="导入数据">📤</button>
-    <button class="btn-icon" id="btn-export" title="导出数据">📥</button>
+    <button class="btn-icon" id="btn-import" title="导入数据">📥</button>
+    <button class="btn-icon" id="btn-export" title="导出数据">📤</button>
     <button class="btn-icon" id="btn-settings" title="编辑猫咪信息">⚙️</button>
   </div>
 </header>

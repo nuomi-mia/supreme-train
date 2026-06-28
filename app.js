@@ -64,14 +64,15 @@ UIRenderer.renderDashboard = function() {
 
   var h='';
   h+='<div class="card cat-profile-card" id="dash-cat-card"><div class="cat-avatar-large">'+(cat.photo?'<img src="'+cat.photo+'" alt="">':'🐱')+'</div>';
-  h+='<div class="cat-info"><h2>'+Utils.escape(cat.name)+'</h2><div class="cat-badges"><span class="badge">'+Utils.escape(cat.breed)+'</span><span class="badge">'+preciseAge(cat.birthDate)+'</span><span class="badge">'+(cat.gender==='female'?'♀ 妹妹':'♂ 弟弟')+'</span><span class="badge">'+(cat.fixed?'已绝育':'未绝育')+'</span></div>';
-  h+='<p style="margin-top:4px;font-size:12px;color:var(--color-text-secondary)">📍 '+Utils.escape(cat.location||'')+' · 💝 已陪伴您 '+padDays(cat.adoptionDate)+'</p>';
-  h+='<p style="margin-top:2px;font-size:11px;color:var(--color-text-muted)">点击卡片查看全部信息 ▾</p></div>';
-  h+='<div class="cat-detail-section" id="cat-detail" style="display:none"><div class="cat-detail-grid">';
+  h+='<div class="cat-info"><h2>'+Utils.escape(cat.name)+'</h2>';
+  h+='<div id="cat-brief"><div class="cat-badges"><span class="badge">'+Utils.escape(cat.breed)+'</span><span class="badge">'+preciseAge(cat.birthDate)+'</span><span class="badge">'+(cat.gender==='female'?'♀ 妹妹':'♂ 弟弟')+'</span><span class="badge">'+(cat.fixed?'已绝育':'未绝育')+'</span></div>';
+  h+='<p style="margin-top:4px;font-size:12px;color:var(--color-text-secondary)">📍 '+Utils.escape(cat.location||'')+' · 💝 已陪伴您 '+padDays(cat.adoptionDate)+'</p></div>';
+  h+='<div id="cat-detail" style="display:none"><div class="cat-detail-grid">';
   h+='<span>📅 生日</span><span class="val">'+cat.birthDate+'（'+preciseAge(cat.birthDate)+'）</span><span>🏠 到家</span><span class="val">'+cat.adoptionDate+'（已陪伴 '+padDays(cat.adoptionDate)+'）</span>';
   h+='<span>🐱 品种</span><span class="val">'+Utils.escape(cat.breed)+'</span><span>🎨 花色</span><span class="val">'+Utils.escape(cat.color||'')+'</span>';
   h+='<span>⚧ 性别</span><span class="val">'+(cat.gender==='female'?'♀ 妹妹':'♂ 弟弟')+'</span><span>🏥 绝育</span><span class="val">'+(cat.fixed?'已绝育':'未绝育')+'</span>';
-  h+='<span>📍 居住地</span><span class="val">'+Utils.escape(cat.location||'')+'</span></div></div></div>';
+  h+='<span>📍 居住地</span><span class="val">'+Utils.escape(cat.location||'')+'</span></div></div>';
+  h+='<p style="margin-top:2px;font-size:11px;color:var(--color-text-muted)">点击卡片查看全部信息 ▾</p></div></div>';
 
   var actMsgs={'⚡⚡⚡ 非常活跃':'🐱 今天元气满满！跑酷小能手已上线~','⚡⚡ 适中':'😺 活力刚刚好，是只健康自律的小猫咪！','⚡ 较安静':'😌 今天想做一枚安静的美喵子~','💤 嗜睡':'💤 充电ing…小猫长身体要多睡觉觉哦！'};
   var moodMsgs={'😊 开心':'😸 尾巴翘高高~','😴 困倦':'🥱 打个哈欠继续睡…','😾 不满':'😾 是不是罐罐没给够？','🤪 调皮':'😈 今天又干了什么坏事呀~','😌 惬意':'☺️ 阳光正好，适合打个盹~','😰 紧张':'🥺 多抱抱多安抚哦~'};
@@ -117,7 +118,7 @@ UIRenderer.renderDashboard = function() {
   de.innerHTML=h;
 
   var cc=document.getElementById('dash-cat-card');
-  if(cc){cc.onclick=function(e){if(e.target.closest('button')||e.target.closest('input'))return;var d=document.getElementById('cat-detail');var h=cc.querySelector('p:last-child');if(!d)return;if(d.style.display==='none'){d.style.display='block';if(h)h.textContent='再次点击收起 ▴';}else{d.style.display='none';if(h)h.textContent='点击卡片查看全部信息 ▾';}};}
+  if(cc){cc.onclick=function(e){if(e.target.closest('button')||e.target.closest('input'))return;var d=document.getElementById('cat-detail');var b=document.getElementById('cat-brief');var h=cc.querySelector('p:last-child');if(!d)return;if(d.style.display==='none'){d.style.display='block';if(b)b.style.display='none';if(h)h.textContent='再次点击收起 ▴';}else{d.style.display='none';if(b)b.style.display='';if(h)h.textContent='点击卡片查看全部信息 ▾';}};}
 
   de.querySelectorAll('.card-clickable').forEach(function(card){card.addEventListener('click',function(){var nav=this.dataset.nav;if(!nav)return;var i=nav.indexOf('-');if(i>0)Router.navigateSub(nav.slice(0,i),nav.slice(i+1));else Router.navigate(nav);});});
 
