@@ -2705,10 +2705,5 @@ UIRenderer._showCatInfoForm = function() {
 
 <script src="nuomi_app.js"></script>
 <script>
-(function poll(){
-  if(typeof UIRenderer!=='undefined'&&UIRenderer.renderDashboard&&DataManager.data()){
-    UIRenderer.renderDashboard();
-    setTimeout(function(){UIRenderer.renderDashboard();},500);
-  }else{setTimeout(poll,50);}
-})();
+document.getElementById('view-dashboard').innerHTML='<div class="card"><h2>✅ 内联脚本执行成功</h2><p>看到这行说明JS能跑，问题是nuomi_app.js没加载或报错。</p></div>';
 </script>
