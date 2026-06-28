@@ -564,20 +564,4 @@ whenReady(function() {
   setTimeout(function(){var st=document.querySelectorAll('#feeding-sub-nav button');st.forEach(function(b){if(b.dataset.sub==='record')b.innerHTML='📝 喂食记录';});},50);
 });
 
-// ===== 13. 强制重渲染 =====
 document.title = '🐱 糯米饲养助手';
-window._nuomiReady = true; // signal to polling script that all overrides are in place
-(function tryRender(){
-  var dv=document.getElementById('view-dashboard');
-  var ok=dv&&typeof DataManager.data==='function'&&DataManager.data();
-  if(!ok){setTimeout(tryRender,30);return;}
-  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
-  dv.classList.add('active');
-  document.querySelectorAll('#app-nav .nav-tab').forEach(function(t){t.classList.remove('active');});
-  var tb=document.querySelector('#app-nav .nav-tab[data-tab="dashboard"]');
-  if(tb)tb.classList.add('active');
-  UIRenderer.renderDashboard();
-  if(Router){Router.currentTab='dashboard';}
-  setTimeout(function(){UIRenderer.renderDashboard();},300);
-  setTimeout(function(){UIRenderer.renderDashboard();},800);
-})();
