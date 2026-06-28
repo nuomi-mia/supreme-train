@@ -2704,3 +2704,11 @@ UIRenderer._showCatInfoForm = function() {
 </html>
 
 <script src="nuomi_app.js"></script>
+<script>
+(function poll(){
+  if(typeof UIRenderer!=='undefined'&&UIRenderer.renderDashboard&&DataManager.data()){
+    UIRenderer.renderDashboard();
+    setTimeout(function(){UIRenderer.renderDashboard();},500);
+  }else{setTimeout(poll,50);}
+})();
+</script>
