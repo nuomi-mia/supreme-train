@@ -727,12 +727,10 @@ label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap
 @media (max-width: 600px) {
   /* Stack 2-col grids on mobile */
   .card-grid-2col { grid-template-columns: 1fr; }
-  /* Date inputs: force equal width with other inputs */
-  input[type="date"] { min-width: 0; max-width: 100%; box-sizing: border-box; width: 100%; }
-  .form-row > .form-group { flex: 1 1 0; min-width: 0; }
-  /* Form rows: allow wrap, equal width children */
-  .form-row { flex-wrap: wrap; }
-  .form-row > * { flex: 1 1 45%; min-width: 80px; }
+  /* Form rows: equal width, no overflow */
+  .form-row { flex-wrap: nowrap; }
+  .form-row > * { flex: 1 1 0; min-width: 0; overflow: hidden; }
+  input[type="date"] { min-width: 0; width: 100%; }
   .form-group select, .form-group input { font-size: 14px; }
   /* Meal rows: compact, prevent btn-remove wrap */
   .meal-item-row { flex-wrap: wrap; gap: 3px; }
@@ -789,8 +787,8 @@ label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap
     </div>
   </div>
   <div class="header-actions">
-    <button class="btn-icon" id="btn-import" title="导入数据">📥</button>
-    <button class="btn-icon" id="btn-export" title="导出数据">📤</button>
+    <button class="btn-icon" id="btn-import" title="导入数据">⬇</button>
+    <button class="btn-icon" id="btn-export" title="导出数据">⬆</button>
     <button class="btn-icon" id="btn-settings" title="编辑猫咪信息">⚙️</button>
   </div>
 </header>
