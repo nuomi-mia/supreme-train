@@ -724,21 +724,28 @@ label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap
 .excretion-card .ex-meta { font-size: 11px; color: var(--color-text-muted); }
 
 /* ========== Responsive ========== */
-@media (max-width: 480px) {
-  /* Form rows: 2 per line on mobile */
+@media (max-width: 600px) {
+  /* Stack 2-col grids on mobile */
+  .card-grid-2col { grid-template-columns: 1fr; }
+  /* Date inputs: consistent sizing */
+  input[type="date"] { min-width: 0; }
+  /* Form rows: allow wrap, 2 per line */
   .form-row { flex-wrap: wrap; }
-  .form-row > * { flex: 1 1 45%; min-width: 100px; }
-  .meal-item-row, .exam-item-row { flex-wrap: wrap; }
-  .meal-item-row select, .meal-item-row input, .exam-item-row input { flex: 1 1 45%; min-width: 60px; }
-  .food-dropdown-wrap { flex: 1 1 100%; min-width: 100%; }
-  /* Calendar: compact on mobile */
-  .calendar-grid .cal-day { font-size: 9px; padding: 1px; }
-  .calendar-grid .cal-day .cal-date { font-size: 10px; }
-  .cal-filter-chip { font-size: 10px; padding: 2px 6px; }
-  /* Health overview: stack vertically */
-  .calendar-grid .cal-day-header { font-size: 9px; }
-  /* Sub-nav: smaller text */
-  .sub-nav button { font-size: 11px; padding: 6px 8px; }
+  .form-row > * { flex: 1 1 45%; min-width: 80px; }
+  .form-group select, .form-group input { font-size: 14px; }
+  /* Meal rows: compact, prevent btn-remove wrap */
+  .meal-item-row { flex-wrap: wrap; gap: 3px; }
+  .meal-item-row > * { flex: 1 1 auto; min-width: 50px; }
+  .meal-item-row .btn-remove, .exam-item-row .btn-remove { flex: 0 0 auto; width: 26px; height: 26px; font-size: 14px; }
+  .food-dropdown-wrap { flex: 1 1 100%; }
+  /* Calendar: compact */
+  .calendar-grid .cal-day { font-size: 8px; padding: 1px; aspect-ratio: auto; height: 36px; }
+  .calendar-grid .cal-day .cal-date { font-size: 10px; line-height: 1; }
+  .calendar-grid .cal-day-header { font-size: 8px; }
+  .cal-filter-chip { font-size: 9px; padding: 2px 5px; }
+  .calendar-nav .cal-month-label { font-size: 13px; }
+  /* Sub-nav: smaller */
+  .sub-nav button { font-size: 10px; padding: 6px 4px; }
 }
 @media (min-width: 768px) {
   body { padding-bottom: 20px; }
