@@ -2705,5 +2705,19 @@ UIRenderer._showCatInfoForm = function() {
 
 <script src="nuomi_app.js"></script>
 <script>
-document.getElementById('view-dashboard').innerHTML='<div class="card"><h2>✅ 内联脚本执行成功</h2><p>看到这行说明JS能跑，问题是nuomi_app.js没加载或报错。</p></div>';
+// Block old renderDashboard from overwriting new content
+window._newVersionLoaded = true;
+// Wait for nuomi_app.js, then render
+(function poll(){
+  if(typeof UIRenderer!=='undefined'&&UIRenderer.renderDashboard&&DataManager.data()){
+    document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+    var dv=document.getElementById('view-dashboard');if(dv)dv.classList.add('active');
+    document.querySelectorAll('#app-nav .nav-tab').forEach(function(t){t.classList.remove('active');});
+    var tb=document.querySelector('#app-nav .nav-tab[data-tab="dashboard"]');
+    if(tb)tb.classList.add('active');
+    UIRenderer.renderDashboard();
+    if(Router){Router.currentTab='dashboard';}
+    setTimeout(function(){UIRenderer.renderDashboard();},500);
+  }else{setTimeout(poll,50);}
+})();
 </script>
