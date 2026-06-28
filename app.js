@@ -566,6 +566,7 @@ whenReady(function() {
 
 // ===== 13. 强制重渲染 =====
 document.title = '🐱 糯米饲养助手';
+window._nuomiReady = true; // signal to polling script that all overrides are in place
 (function tryRender(){
   var dv=document.getElementById('view-dashboard');
   var ok=dv&&typeof DataManager.data==='function'&&DataManager.data();
