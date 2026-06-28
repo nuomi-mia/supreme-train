@@ -724,6 +724,22 @@ label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap
 .excretion-card .ex-meta { font-size: 11px; color: var(--color-text-muted); }
 
 /* ========== Responsive ========== */
+@media (max-width: 480px) {
+  /* Form rows: 2 per line on mobile */
+  .form-row { flex-wrap: wrap; }
+  .form-row > * { flex: 1 1 45%; min-width: 100px; }
+  .meal-item-row, .exam-item-row { flex-wrap: wrap; }
+  .meal-item-row select, .meal-item-row input, .exam-item-row input { flex: 1 1 45%; min-width: 60px; }
+  .food-dropdown-wrap { flex: 1 1 100%; min-width: 100%; }
+  /* Calendar: compact on mobile */
+  .calendar-grid .cal-day { font-size: 9px; padding: 1px; }
+  .calendar-grid .cal-day .cal-date { font-size: 10px; }
+  .cal-filter-chip { font-size: 10px; padding: 2px 6px; }
+  /* Health overview: stack vertically */
+  .calendar-grid .cal-day-header { font-size: 9px; }
+  /* Sub-nav: smaller text */
+  .sub-nav button { font-size: 11px; padding: 6px 8px; }
+}
 @media (min-width: 768px) {
   body { padding-bottom: 20px; }
   .view-container { padding: var(--spacing-lg) var(--spacing-lg); }
@@ -761,8 +777,8 @@ label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap
     </div>
   </div>
   <div class="header-actions">
-    <button class="btn-icon" id="btn-export" title="导出数据">📥</button>
     <button class="btn-icon" id="btn-import" title="导入数据">📤</button>
+    <button class="btn-icon" id="btn-export" title="导出数据">📥</button>
     <button class="btn-icon" id="btn-settings" title="编辑猫咪信息">⚙️</button>
   </div>
 </header>
