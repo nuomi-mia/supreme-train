@@ -566,13 +566,17 @@ whenReady(function() {
 
 // ===== 13. 强制重渲染 =====
 document.title = '🐱 糯米饲养助手';
-setTimeout(function(){
+(function tryRender(){
+  var dv=document.getElementById('view-dashboard');
+  var ok=dv&&DataManager.data&&DataManager.data();
+  if(!ok){setTimeout(tryRender,30);return;}
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+  dv.classList.add('active');
+  document.querySelectorAll('#app-nav .nav-tab').forEach(function(t){t.classList.remove('active');});
+  var tb=document.querySelector('#app-nav .nav-tab[data-tab="dashboard"]');
+  if(tb)tb.classList.add('active');
   UIRenderer.renderDashboard();
-  setTimeout(function(){
-    var d2=document.getElementById('view-dashboard');
-    if(d2&&d2.innerHTML.length<200){UIRenderer.renderDashboard();}
-  },200);
-},100);
-setTimeout(function(){
-  UIRenderer.renderDashboard();
-},500);
+  if(Router){Router.currentTab='dashboard';}
+  setTimeout(function(){UIRenderer.renderDashboard();},300);
+  setTimeout(function(){UIRenderer.renderDashboard();},800);
+})();
