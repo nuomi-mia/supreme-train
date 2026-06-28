@@ -727,9 +727,10 @@ label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap
 @media (max-width: 600px) {
   /* Stack 2-col grids on mobile */
   .card-grid-2col { grid-template-columns: 1fr; }
-  /* Date inputs: same width as regular inputs */
-  input[type="date"] { min-width: 0; max-width: 100%; box-sizing: border-box; }
-  /* Form rows: allow wrap, 2 per line */
+  /* Date inputs: force equal width with other inputs */
+  input[type="date"] { min-width: 0; max-width: 100%; box-sizing: border-box; width: 100%; }
+  .form-row > .form-group { flex: 1 1 0; min-width: 0; }
+  /* Form rows: allow wrap, equal width children */
   .form-row { flex-wrap: wrap; }
   .form-row > * { flex: 1 1 45%; min-width: 80px; }
   .form-group select, .form-group input { font-size: 14px; }
@@ -746,6 +747,10 @@ label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap
   .calendar-nav .cal-month-label { font-size: 13px; }
   /* Sub-nav: smaller */
   .sub-nav button { font-size: 10px; padding: 6px 4px; }
+  /* Weight stats: hide date on mobile */
+  .weight-stats span { font-size: 10px; padding: 4px 8px; }
+  /* Finance: cards 2 per row */
+  #finance-content .card-grid-2col { grid-template-columns: 1fr 1fr; }
 }
 @media (min-width: 768px) {
   body { padding-bottom: 20px; }
