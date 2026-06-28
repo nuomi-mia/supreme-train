@@ -568,7 +568,7 @@ whenReady(function() {
 document.title = '🐱 糯米饲养助手';
 (function tryRender(){
   var dv=document.getElementById('view-dashboard');
-  var ok=dv&&DataManager.data&&DataManager.data();
+  var ok=dv&&typeof DataManager.data==='function'&&DataManager.data();
   if(!ok){setTimeout(tryRender,30);return;}
   document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
   dv.classList.add('active');
